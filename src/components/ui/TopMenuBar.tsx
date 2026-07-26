@@ -6,10 +6,16 @@ import {
   Clock,
   Command,
   ChevronRight,
-  Code2,
   Sparkles,
   Columns,
   Layout,
+  Play,
+  Terminal,
+  Search,
+  CheckSquare,
+  ArrowRight,
+  Keyboard,
+  X,
 } from 'lucide-react';
 import { useEditorStore } from '../../features/editor/stores/editorStore';
 import { useWorkspaceStore } from '../../features/workspace/stores/workspaceStore';
@@ -18,16 +24,18 @@ import { useLayoutStore } from '../../stores/layoutStore';
 import { useTerminalStore } from '../../features/terminal/stores/terminalStore';
 import { saveFile } from '../../services/fileService';
 
+type MenuType = 'file' | 'edit' | 'selection' | 'view' | 'go' | 'run' | 'terminal' | 'help' | null;
+
 export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDevModal }) => {
-  const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'view' | null>(null);
+  const [activeMenu, setActiveMenu] = useState<MenuType>(null);
   const [showRecentSubmenu, setShowRecentSubmenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { newUntitledTab, getActiveTab, markTabSaved, toggleSplitView } = useEditorStore();
+  const { newUntitledTab, getActiveTab, markTabSaved, closeTab, toggleSplitView } = useEditorStore();
   const { openFolder, recentFolders } = useWorkspaceStore();
   const { toggleCommandPalette } = useCommandStore();
-  const { toggleSidebar } = useLayoutStore();
-  const { toggleTerminal } = useTerminalStore();
+  const { toggleSidebar, setActiveView } = useLayoutStore();
+  const { toggleTerminal, runCodeFile } = useTerminalStore();
 
   const activeTab = getActiveTab();
 
@@ -52,14 +60,25 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
     }
   };
 
+  const handleRunCurrentFile = () => {
+    if (!activeTab || !activeTab.filePath) return;
+    const ext = activeTab.fileName.split('.').pop()?.toLowerCase();
+    let cmd = `node "${activeTab.filePath}"`;
+    if (ext === 'py') cmd = `python3 "${activeTab.filePath}"`;
+    else if (ext === 'ts' || ext === 'tsx') cmd = `npx tsx "${activeTab.filePath}"`;
+    else if (ext === 'rs') cmd = `cargo run`;
+    else if (ext === 'sh') cmd = `bash "${activeTab.filePath}"`;
+    runCodeFile(cmd);
+  };
+
   return (
     <header
       data-tauri-drag-region
       className="h-8 bg-bg-surface border-b border-border-subtle flex items-center justify-between pl-[76px] pr-3 text-xs text-text-muted select-none shrink-0 relative z-40"
     >
-      {/* Left: Window App Title & Top Menus */}
-      <div className="flex items-center gap-3" ref={menuRef}>
-        <div className="flex items-center gap-1 text-[11px] font-medium">
+      {/* Left: VS Code Style Top Menus */}
+      <div className="flex items-center gap-1" ref={menuRef}>
+        <div className="flex items-center gap-0.5 text-[11px] font-medium">
           {/* FILE MENU */}
           <div className="relative">
             <button
@@ -73,7 +92,7 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
             </button>
 
             {activeMenu === 'file' && (
-              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5">
+              <div className="absolute left-0 top-6 w-60 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
                 <button
                   type="button"
                   onClick={() => {
@@ -84,7 +103,7 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
                 >
                   <div className="flex items-center gap-2">
                     <Plus className="w-3.5 h-3.5 text-accent" />
-                    <span>New File</span>
+                    <span>New Text File</span>
                   </div>
                   <kbd className="text-[10px] font-mono text-text-subtle">⌘N</kbd>
                 </button>
@@ -101,24 +120,8 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
                     <FolderOpen className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Open Folder...</span>
                   </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘O</kbd>
                 </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSave();
-                    setActiveMenu(null);
-                  }}
-                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <Save className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Save File</span>
-                  </div>
-                  <kbd className="text-[10px] font-mono text-text-subtle">⌘S</kbd>
-                </button>
-
-                <div className="h-px bg-border-subtle my-1" />
 
                 {/* Open Recent Submenu Trigger */}
                 <div
@@ -139,7 +142,7 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
 
                   {/* Recent Workspaces Submenu */}
                   {showRecentSubmenu && (
-                    <div className="absolute left-full top-0 w-64 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl p-1 flex flex-col gap-0.5 ml-1">
+                    <div className="absolute left-full top-0 w-64 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl p-1 flex flex-col gap-0.5 ml-1 z-50">
                       <div className="px-2 py-1 text-[10px] font-semibold text-text-muted border-b border-border-subtle">
                         Recent Workspaces
                       </div>
@@ -174,16 +177,33 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
                 <button
                   type="button"
                   onClick={() => {
-                    toggleCommandPalette();
+                    handleSave();
                     setActiveMenu(null);
                   }}
                   className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <Command className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Command Palette</span>
+                    <Save className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Save</span>
                   </div>
-                  <kbd className="text-[10px] font-mono text-text-subtle">⌘K</kbd>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘S</kbd>
+                </button>
+
+                <div className="h-px bg-border-subtle my-1" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeTab) closeTab(activeTab.id);
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <X className="w-3.5 h-3.5 text-red-400" />
+                    <span>Close Editor</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘W</kbd>
                 </button>
               </div>
             )}
@@ -202,17 +222,49 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
             </button>
 
             {activeMenu === 'edit' && (
-              <div className="absolute left-0 top-6 w-52 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5">
+              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
                 <button
                   type="button"
                   onClick={() => {
-                    toggleCommandPalette();
+                    setActiveView('search');
                     setActiveMenu(null);
                   }}
                   className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
                 >
-                  <span>Search Commands</span>
-                  <kbd className="text-[10px] font-mono text-text-subtle">⌘K</kbd>
+                  <div className="flex items-center gap-2">
+                    <Search className="w-3.5 h-3.5 text-accent" />
+                    <span>Find in Workspace</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘F</kbd>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* SELECTION MENU */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setActiveMenu(activeMenu === 'selection' ? null : 'selection')}
+              className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                activeMenu === 'selection' ? 'bg-bg-active text-text-main font-semibold' : 'hover:bg-bg-hover hover:text-text-main'
+              }`}
+            >
+              Selection
+            </button>
+
+            {activeMenu === 'selection' && (
+              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveMenu(null)}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckSquare className="w-3.5 h-3.5 text-accent" />
+                    <span>Select All</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘A</kbd>
                 </button>
               </div>
             )}
@@ -231,7 +283,50 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
             </button>
 
             {activeMenu === 'view' && (
-              <div className="absolute left-0 top-6 w-52 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5">
+              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleCommandPalette();
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Command className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Command Palette...</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘K</kbd>
+                </button>
+
+                <div className="h-px bg-border-subtle my-1" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveView('explorer');
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <span>Explorer</span>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⇧⌘E</kbd>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveView('search');
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <span>Search</span>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⇧⌘F</kbd>
+                </button>
+
+                <div className="h-px bg-border-subtle my-1" />
+
                 <button
                   type="button"
                   onClick={() => {
@@ -242,7 +337,7 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
                 >
                   <div className="flex items-center gap-2">
                     <Columns className="w-3.5 h-3.5 text-accent" />
-                    <span>Split Editor</span>
+                    <span>Toggle Split Editor</span>
                   </div>
                   <kbd className="text-[10px] font-mono text-text-subtle">⌘\</kbd>
                 </button>
@@ -257,7 +352,7 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
                 >
                   <div className="flex items-center gap-2">
                     <Layout className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Toggle Sidebar</span>
+                    <span>Toggle Primary Sidebar</span>
                   </div>
                   <kbd className="text-[10px] font-mono text-text-subtle">⌘B</kbd>
                 </button>
@@ -271,10 +366,150 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
                   className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <Code2 className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Toggle Terminal</span>
+                    <Terminal className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Toggle Terminal Panel</span>
                   </div>
                   <kbd className="text-[10px] font-mono text-text-subtle">⌘T</kbd>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* GO MENU */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setActiveMenu(activeMenu === 'go' ? null : 'go')}
+              className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                activeMenu === 'go' ? 'bg-bg-active text-text-main font-semibold' : 'hover:bg-bg-hover hover:text-text-main'
+              }`}
+            >
+              Go
+            </button>
+
+            {activeMenu === 'go' && (
+              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleCommandPalette();
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <ArrowRight className="w-3.5 h-3.5 text-accent" />
+                    <span>Go to File...</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘P</kbd>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* RUN MENU */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setActiveMenu(activeMenu === 'run' ? null : 'run')}
+              className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                activeMenu === 'run' ? 'bg-bg-active text-text-main font-semibold' : 'hover:bg-bg-hover hover:text-text-main'
+              }`}
+            >
+              Run
+            </button>
+
+            {activeMenu === 'run' && (
+              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleRunCurrentFile();
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+                    <span>Run Active File</span>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* TERMINAL MENU */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setActiveMenu(activeMenu === 'terminal' ? null : 'terminal')}
+              className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                activeMenu === 'terminal' ? 'bg-bg-active text-text-main font-semibold' : 'hover:bg-bg-hover hover:text-text-main'
+              }`}
+            >
+              Terminal
+            </button>
+
+            {activeMenu === 'terminal' && (
+              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleTerminal();
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Terminal className="w-3.5 h-3.5 text-accent" />
+                    <span>New Terminal</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘T</kbd>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* HELP MENU */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setActiveMenu(activeMenu === 'help' ? null : 'help')}
+              className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                activeMenu === 'help' ? 'bg-bg-active text-text-main font-semibold' : 'hover:bg-bg-hover hover:text-text-main'
+              }`}
+            >
+              Help
+            </button>
+
+            {activeMenu === 'help' && (
+              <div className="absolute left-0 top-6 w-56 bg-[#12141a] border border-border-subtle rounded-lg shadow-2xl z-50 p-1 flex flex-col gap-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleCommandPalette();
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Keyboard className="w-3.5 h-3.5 text-accent" />
+                    <span>Keyboard Shortcuts</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-text-subtle">⌘K ⌘S</kbd>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenDevModal();
+                    setActiveMenu(null);
+                  }}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-bg-hover text-text-main transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>About Developer</span>
+                  </div>
                 </button>
               </div>
             )}
