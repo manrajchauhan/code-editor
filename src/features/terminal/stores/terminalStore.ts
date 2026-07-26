@@ -58,7 +58,7 @@ export const useTerminalStore = create<TerminalState>((set) => ({
   setLastExecutionBenchmark: (benchmark) =>
     set({
       lastExecutionBenchmark: benchmark,
-      isBenchmarkModalOpen: true,
+      isBenchmarkModalOpen: false, // Never auto-pop up benchmark modal on execution
     }),
 
   closeBenchmarkModal: () => set({ isBenchmarkModalOpen: false }),
