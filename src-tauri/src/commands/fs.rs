@@ -36,7 +36,7 @@ pub async fn execute_shell_command(command: String, cwd: String) -> Result<Strin
     let current_path = std::env::var("PATH").unwrap_or_default();
     let full_path = format!("{}/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:{}", home, current_path);
 
-    let lower_cmd = command.to_lower_case();
+    let lower_cmd = command.to_lowercase();
     let is_daemon = lower_cmd.contains("dev") || lower_cmd.contains("start") || lower_cmd.contains("serve");
 
     if is_daemon {
