@@ -53,7 +53,7 @@ export const TerminalPanel: React.FC = () => {
     fitAddonRef.current = fitAddon;
 
     const prompt = () => {
-      const dirName = currentFolderName || 'code-editor';
+      const dirName = currentFolderName || 'Demo';
       term.write(`\r\n\x1b[38;2;99;102;241m${dirName}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m `);
     };
 
@@ -162,7 +162,15 @@ export const TerminalPanel: React.FC = () => {
   }, [pendingRunCommand]);
 
   const runCommand = async (commandLine: string, term: XTerm) => {
-    const activePath = currentFolderPath || '/Volumes/Personal Space/Cross Platform Apps/code-editor';
+    const activeTab = useEditorStore.getState().getActiveTab();
+    let activePath = currentFolderPath || '/Volumes/Personal Space/Cross Platform Apps/Demo';
+
+    if (activeTab && activeTab.filePath && activeTab.filePath.startsWith('/')) {
+      const parentDir = activeTab.filePath.substring(0, activeTab.filePath.lastIndexOf('/'));
+      if (parentDir) {
+        activePath = parentDir;
+      }
+    }
 
     if (commandLine.toLowerCase() === 'clear') {
       term.clear();
@@ -177,8 +185,6 @@ export const TerminalPanel: React.FC = () => {
       term.write(`\x1b[38;2;156;163;175m[⚡ Performance Benchmark]\x1b[0m Execution Duration: \x1b[38;2;74;222;128m${durationMs} ms\x1b[0m\r\n`);
       await refreshWorkspace();
 
-      // Trigger automatic Benchmark Modal popup on code execution!
-      const activeTab = useEditorStore.getState().getActiveTab();
       const ipcSpawnMs = Number((durationMs * 0.05).toFixed(2));
       const v8BootMs = Number((durationMs * 0.75).toFixed(2));
       const execStreamMs = Number((durationMs * 0.12).toFixed(2));
@@ -196,7 +202,7 @@ export const TerminalPanel: React.FC = () => {
       });
     }
 
-    const dirName = currentFolderName || 'code-editor';
+    const dirName = activePath.split('/').pop() || currentFolderName || 'Demo';
     term.write(`\x1b[38;2;99;102;241m${dirName}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m `);
   };
 
@@ -207,7 +213,15 @@ export const TerminalPanel: React.FC = () => {
     historyRef.current.push(cmd);
     historyIndexRef.current = historyRef.current.length;
 
-    term.write(`\r\n\x1b[38;2;99;102;241m${currentFolderName || 'code-editor'}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m ${cmd}\r\n`);
+    const activeTab = useEditorStore.getState().getActiveTab();
+    let activePath = currentFolderPath || '/Volumes/Personal Space/Cross Platform Apps/Demo';
+    if (activeTab && activeTab.filePath && activeTab.filePath.startsWith('/')) {
+      const parentDir = activeTab.filePath.substring(0, activeTab.filePath.lastIndexOf('/'));
+      if (parentDir) activePath = parentDir;
+    }
+    const dirName = activePath.split('/').pop() || currentFolderName || 'Demo';
+
+    term.write(`\r\n\x1b[38;2;99;102;241m${dirName}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m ${cmd}\r\n`);
     await runCommand(cmd, term);
   };
 

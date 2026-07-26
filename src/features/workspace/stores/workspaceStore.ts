@@ -11,7 +11,7 @@ import {
   deleteFileSystemItem,
 } from '../../../services/fileSystemService';
 
-const DEFAULT_WORKSPACE_PATH = '/Volumes/Personal Space/Cross Platform Apps/code-editor';
+const DEFAULT_WORKSPACE_PATH = '/Volumes/Personal Space/Cross Platform Apps/Demo';
 const RECENT_FOLDERS_KEY = 'code_editor_recent_folders';
 
 function getInitialRecentFolders(): string[] {
@@ -63,8 +63,8 @@ function toggleNodeInTree(node: FileNode, targetId: string): { node: FileNode; e
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
-  currentFolderPath: null,
-  currentFolderName: null,
+  currentFolderPath: DEFAULT_WORKSPACE_PATH,
+  currentFolderName: 'Demo',
   rootNode: null,
   selectedNodeId: null,
   isLoading: false,
