@@ -17,7 +17,19 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const existing = tabs.find((t) => (tabData.filePath && t.filePath === tabData.filePath) || t.id === tabData.id);
 
     if (existing) {
-      set({ activeTabId: existing.id });
+      const nextContent = tabData.content ?? existing.content;
+      set((state) => ({
+        activeTabId: existing.id,
+        tabs: state.tabs.map((t) => {
+          if (t.id !== existing.id) return t;
+          return {
+            ...t,
+            content: nextContent,
+            savedContent: nextContent,
+            isDirty: false,
+          };
+        }),
+      }));
       return;
     }
 
@@ -40,7 +52,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }));
   },
 
-  closeTab: (id) => {
+  closeTab: async (id) => {
+    const tabToClose = get().tabs.find((t) => t.id === id);
+    if (tabToClose && tabToClose.filePath) {
+      // Ensure physical disk flush on tab close!
+      await saveFile(tabToClose.filePath, tabToClose.content);
+    }
+
     set((state) => {
       const remaining = state.tabs.filter((t) => t.id !== id);
       let nextActiveId = state.activeTabId;
@@ -86,9 +104,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }),
 
   updateTabContent: (id, newContent) => {
+    let targetFilePath: string | undefined;
+
     set((state) => ({
       tabs: state.tabs.map((tab) => {
         if (tab.id !== id) return tab;
+        targetFilePath = tab.filePath;
         return {
           ...tab,
           content: newContent,
@@ -98,10 +119,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }),
     }));
 
-    // Instant Physical System Disk Sync
-    const tab = get().tabs.find((t) => t.id === id);
-    if (tab && tab.filePath) {
-      saveFile(tab.filePath, newContent);
+    if (targetFilePath) {
+      saveFile(targetFilePath, newContent).catch(() => {});
     }
   },
 

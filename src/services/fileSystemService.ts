@@ -97,9 +97,11 @@ export async function readDirectoryTree(folderPath: string): Promise<FileNode> {
 
 export async function readFileText(filePath: string): Promise<string> {
   try {
-    return await invoke<string>('read_file_content', { path: filePath });
+    const content = await invoke<string>('read_file_content', { path: filePath });
+    DEMO_FILE_CONTENTS[filePath] = content;
+    return content;
   } catch (error) {
-    if (DEMO_FILE_CONTENTS[filePath]) {
+    if (DEMO_FILE_CONTENTS[filePath] !== undefined) {
       return DEMO_FILE_CONTENTS[filePath];
     }
     return `// Content of ${filePath}\nconsole.log('Loaded file');\n`;
@@ -111,22 +113,23 @@ export async function saveFile(filePath?: string, content?: string): Promise<{ s
     return { success: false, error: 'No file path or content specified' };
   }
 
+  DEMO_FILE_CONTENTS[filePath] = content;
+
   try {
     await invoke('write_file_content', { path: filePath, content });
     return { success: true };
   } catch (error) {
-    DEMO_FILE_CONTENTS[filePath] = content;
     return { success: true };
   }
 }
 
 export async function createFileItem(parentPath: string, fileName: string): Promise<boolean> {
   const fullPath = `${parentPath}/${fileName}`.replace(/\/+/g, '/');
+  DEMO_FILE_CONTENTS[fullPath] = `// ${fileName}\n`;
   try {
     await invoke('create_file_node', { path: fullPath });
     return true;
   } catch (error) {
-    DEMO_FILE_CONTENTS[fullPath] = `// ${fileName}\n`;
     return true;
   }
 }
@@ -147,6 +150,10 @@ export async function renameFileSystemItem(oldPath: string, newName: string): Pr
   const newPath = [...pathParts, newName].join('/');
   try {
     await invoke('rename_node', { oldPath, newPath });
+    if (DEMO_FILE_CONTENTS[oldPath]) {
+      DEMO_FILE_CONTENTS[newPath] = DEMO_FILE_CONTENTS[oldPath];
+      delete DEMO_FILE_CONTENTS[oldPath];
+    }
     return true;
   } catch (error) {
     if (DEMO_FILE_CONTENTS[oldPath]) {
@@ -167,6 +174,9 @@ export async function copyFileSystemItem(itemPath: string): Promise<boolean> {
 
   try {
     await invoke('copy_node', { srcPath: itemPath, destPath });
+    if (DEMO_FILE_CONTENTS[itemPath]) {
+      DEMO_FILE_CONTENTS[destPath] = DEMO_FILE_CONTENTS[itemPath];
+    }
     return true;
   } catch (error) {
     if (DEMO_FILE_CONTENTS[itemPath]) {
@@ -179,6 +189,7 @@ export async function copyFileSystemItem(itemPath: string): Promise<boolean> {
 export async function deleteFileSystemItem(itemPath: string): Promise<boolean> {
   try {
     await invoke('delete_node', { path: itemPath });
+    delete DEMO_FILE_CONTENTS[itemPath];
     return true;
   } catch (error) {
     delete DEMO_FILE_CONTENTS[itemPath];
