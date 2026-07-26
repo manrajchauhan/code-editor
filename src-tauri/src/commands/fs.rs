@@ -1,0 +1,101 @@
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::Path;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FileNode {
+    pub id: String,
+    pub name: String,
+    pub path: String,
+    pub is_directory: bool,
+    pub children: Option<Vec<FileNode>>,
+    pub is_expanded: Option<bool>,
+}
+
+#[tauri::command]
+pub async fn read_directory_tree(path: String) -> Result<FileNode, String> {
+    let p = Path::new(&path);
+    if !p.exists() {
+        return Err("Directory does not exist".to_string());
+    }
+
+    let name = p
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| path.clone());
+
+    let node = read_node_recursive(p)?;
+    Ok(node)
+}
+
+fn read_node_recursive(path: &Path) -> Result<FileNode, String> {
+    let is_dir = path.is_dir();
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let path_str = path.to_string_lossy().to_string();
+
+    let mut children = None;
+
+    if is_dir {
+        let mut child_nodes = Vec::new();
+        if let Ok(entries) = fs::read_dir(path) {
+            for entry in entries.flatten() {
+                let child_path = entry.path();
+                // Skip hidden files/dirs like .git, .DS_Store, node_modules
+                if let Some(child_name) = child_path.file_name() {
+                    let s = child_name.to_string_lossy();
+                    if s.starts_with('.') || s == "node_modules" || s == "target" {
+                        continue;
+                    }
+                }
+                if let Ok(child_node) = read_node_recursive(&child_path) {
+                    child_nodes.push(child_node);
+                }
+            }
+        }
+        child_nodes.sort_by(|a, b| b.is_directory.cmp(&a.is_directory).then(a.name.cmp(&b.name)));
+        children = Some(child_nodes);
+    }
+
+    Ok(FileNode {
+        id: path_str.clone(),
+        name,
+        path: path_str,
+        is_directory: is_dir,
+        children,
+        is_expanded: Some(false),
+    })
+}
+
+#[tauri::command]
+pub async fn read_file_content(path: String) -> Result<String, String> {
+    fs::read_to_string(&path).map_err(|e| format!("Failed to read file: {}", e))
+}
+
+#[tauri::command]
+pub async fn write_file_content(path: String, content: String) -> Result<(), String> {
+    fs::write(&path, content).map_err(|e| format!("Failed to write file: {}", e))
+}
+
+#[tauri::command]
+pub async fn create_file_node(path: String) -> Result<(), String> {
+    fs::File::create(&path).map_err(|e| format!("Failed to create file: {}", e))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn create_dir_node(path: String) -> Result<(), String> {
+    fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {}", e))
+}
+
+#[tauri::command]
+pub async fn delete_node(path: String) -> Result<(), String> {
+    let p = Path::new(&path);
+    if p.is_dir() {
+        fs::remove_dir_all(p).map_err(|e| format!("Failed to delete directory: {}", e))
+    } else {
+        fs::remove_file(p).map_err(|e| format!("Failed to delete file: {}", e))
+    }
+}
