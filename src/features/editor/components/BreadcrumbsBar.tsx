@@ -1,8 +1,9 @@
 import React from 'react';
-import { ChevronRight, FileCode, Folder } from 'lucide-react';
+import { ChevronRight, Folder } from 'lucide-react';
 import { useEditorStore } from '../stores/editorStore';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { useLayoutStore } from '../../../stores/layoutStore';
+import { FileIcon } from '../../../components/ui/FileIcon';
 
 export const BreadcrumbsBar: React.FC<{ tabId?: string }> = ({ tabId }) => {
   const { getActiveTab, getSecondaryTab } = useEditorStore();
@@ -38,7 +39,7 @@ export const BreadcrumbsBar: React.FC<{ tabId?: string }> = ({ tabId }) => {
               title={`Jump to ${part} in Explorer`}
             >
               {isLast ? (
-                <FileCode className="w-3.5 h-3.5 text-accent shrink-0" />
+                <FileIcon fileName={part} className="w-3.5 h-3.5 shrink-0" />
               ) : (
                 <Folder className="w-3.5 h-3.5 text-amber-400/80 shrink-0" />
               )}

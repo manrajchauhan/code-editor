@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Search as SearchIcon, FileCode, Replace } from 'lucide-react';
+import { Search as SearchIcon, Replace } from 'lucide-react';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { useEditorStore } from '../../editor/stores/editorStore';
 import { FileNode } from '../../workspace/types/workspace.types';
 import { detectLanguage } from '../../editor/utils/languageDetector';
 import { readFileText } from '../../../services/fileSystemService';
+import { FileIcon } from '../../../components/ui/FileIcon';
 
 export const WorkspaceSearchPane: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -115,7 +116,7 @@ export const WorkspaceSearchPane: React.FC = () => {
               onClick={() => handleOpenFile(file)}
               className="flex items-center gap-2 p-1.5 rounded hover:bg-bg-hover cursor-pointer text-text-muted hover:text-text-main transition-colors"
             >
-              <FileCode className="w-4 h-4 text-accent shrink-0" />
+              <FileIcon fileName={file.name} className="w-4 h-4 shrink-0" />
               <div className="flex flex-col truncate">
                 <span className="font-medium text-text-main truncate">{file.name}</span>
                 <span className="text-[10px] text-text-subtle truncate">{file.path}</span>

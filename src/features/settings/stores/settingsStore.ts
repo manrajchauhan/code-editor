@@ -16,7 +16,7 @@ export interface SettingsState {
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
-  theme: 'tokyo-night',
+  theme: 'vs-dark',
   fontSize: 14,
   tabSize: 2,
   wordWrap: 'on',
