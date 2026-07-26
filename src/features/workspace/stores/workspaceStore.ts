@@ -10,17 +10,41 @@ import {
   deleteFileSystemItem,
 } from '../../../services/fileSystemService';
 
-function toggleNodeInTree(node: FileNode, targetId: string): FileNode {
-  if (node.id === targetId) {
-    return { ...node, isExpanded: !node.isExpanded };
+const DEFAULT_WORKSPACE_PATH = '/Volumes/Personal Space/Cross Platform Apps/code-editor';
+
+function applyExpansionStates(node: FileNode, expandedIds: Set<string>): FileNode {
+  const isExpanded = expandedIds.has(node.id) || (node.id === expandedIds.values().next().value);
+  if (!node.children) {
+    return { ...node, isExpanded };
   }
-  if (node.children) {
-    return {
-      ...node,
-      children: node.children.map((child) => toggleNodeInTree(child, targetId)),
-    };
+  return {
+    ...node,
+    isExpanded,
+    children: node.children.map((child) => applyExpansionStates(child, expandedIds)),
+  };
+}
+
+function toggleNodeInTree(node: FileNode, targetId: string): { node: FileNode; expandedIds: Set<string> } {
+  const expanded = new Set<string>();
+
+  function collectAndToggle(n: FileNode): FileNode {
+    const isTarget = n.id === targetId;
+    const nextExpanded = isTarget ? !n.isExpanded : n.isExpanded;
+    if (nextExpanded) {
+      expanded.add(n.id);
+    }
+    if (n.children) {
+      return {
+        ...n,
+        isExpanded: nextExpanded,
+        children: n.children.map((c) => collectAndToggle(c)),
+      };
+    }
+    return { ...n, isExpanded: nextExpanded };
   }
-  return node;
+
+  const updatedNode = collectAndToggle(node);
+  return { node: updatedNode, expandedIds: expanded };
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
@@ -33,14 +57,17 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   openFolder: async (path?: string) => {
     set({ isLoading: true });
     try {
-      const targetPath = path || (await openFolderDialog());
+      const targetPath = path || (await openFolderDialog()) || DEFAULT_WORKSPACE_PATH;
       if (!targetPath) {
         set({ isLoading: false });
         return;
       }
 
-      const root = await readDirectoryTree(targetPath);
+      const rawRoot = await readDirectoryTree(targetPath);
       const folderName = targetPath.split('/').pop() || targetPath;
+
+      const expandedIds = new Set<string>([rawRoot.id]);
+      const root = applyExpansionStates(rawRoot, expandedIds);
 
       set({
         currentFolderPath: targetPath,
@@ -57,9 +84,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   toggleNodeExpanded: (id: string) => {
     set((state) => {
       if (!state.rootNode) return state;
-      return {
-        rootNode: toggleNodeInTree(state.rootNode, id),
-      };
+      const { node } = toggleNodeInTree(state.rootNode, id);
+      return { rootNode: node };
     });
   },
 
@@ -91,11 +117,21 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   refreshWorkspace: async () => {
-    const { currentFolderPath } = get();
+    const { currentFolderPath, rootNode } = get();
     if (!currentFolderPath) return;
     set({ isLoading: true });
     try {
-      const root = await readDirectoryTree(currentFolderPath);
+      const expanded = new Set<string>();
+      function extractExpanded(n: FileNode | null) {
+        if (!n) return;
+        if (n.isExpanded) expanded.add(n.id);
+        if (n.children) n.children.forEach(extractExpanded);
+      }
+      extractExpanded(rootNode);
+
+      const rawRoot = await readDirectoryTree(currentFolderPath);
+      const root = applyExpansionStates(rawRoot, expanded);
+
       set({ rootNode: root, isLoading: false });
     } catch (error) {
       console.error('Failed to refresh workspace:', error);

@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { FileNode } from '../features/workspace/types/workspace.types';
 
-// Mock workspace data for web browser preview mode
+// Mock workspace data for web browser preview fallback
 const DEMO_PROJECT_NODE: FileNode = {
   id: 'root-demo',
   name: 'my-project',
@@ -73,8 +73,8 @@ export async function openFolderDialog(): Promise<string | null> {
     const selected = await invoke<string | null>('open_folder_dialog');
     return selected;
   } catch (error) {
-    console.info('[FileSystemService] Native open_folder_dialog not available in web mode, using demo project');
-    return '/my-project';
+    console.info('[FileSystemService] Native open_folder_dialog fallback used');
+    return null;
   }
 }
 
@@ -82,7 +82,7 @@ export async function readDirectoryTree(folderPath: string): Promise<FileNode> {
   try {
     return await invoke<FileNode>('read_directory_tree', { path: folderPath });
   } catch (error) {
-    console.info('[FileSystemService] Using web mode demo tree for:', folderPath);
+    console.info('[FileSystemService] Web mode fallback tree for:', folderPath);
     return DEMO_PROJECT_NODE;
   }
 }
@@ -98,40 +98,50 @@ export async function readFileText(filePath: string): Promise<string> {
   }
 }
 
-export async function createFileItem(parentPath: string, fileName: string): Promise<boolean> {
+export async function saveFile(filePath?: string, content?: string): Promise<{ success: boolean; error?: string }> {
+  if (!filePath || content === undefined) {
+    return { success: false, error: 'No file path or content specified' };
+  }
+
   try {
-    const fullPath = `${parentPath}/${fileName}`;
+    await invoke('write_file_content', { path: filePath, content });
+    return { success: true };
+  } catch (error) {
+    DEMO_FILE_CONTENTS[filePath] = content;
+    return { success: true };
+  }
+}
+
+export async function createFileItem(parentPath: string, fileName: string): Promise<boolean> {
+  const fullPath = `${parentPath}/${fileName}`.replace(/\/+/g, '/');
+  try {
     await invoke('create_file_node', { path: fullPath });
     return true;
   } catch (error) {
-    console.info(`[FileSystemService] Created mock file: ${parentPath}/${fileName}`);
-    DEMO_FILE_CONTENTS[`${parentPath}/${fileName}`] = `// Created ${fileName}\n`;
+    DEMO_FILE_CONTENTS[fullPath] = `// ${fileName}\n`;
     return true;
   }
 }
 
 export async function createDirItem(parentPath: string, folderName: string): Promise<boolean> {
+  const fullPath = `${parentPath}/${folderName}`.replace(/\/+/g, '/');
   try {
-    const fullPath = `${parentPath}/${folderName}`;
     await invoke('create_dir_node', { path: fullPath });
     return true;
   } catch (error) {
-    console.info(`[FileSystemService] Created mock folder: ${parentPath}/${folderName}`);
     return true;
   }
 }
 
 export async function renameFileSystemItem(oldPath: string, newName: string): Promise<boolean> {
+  const pathParts = oldPath.split('/');
+  pathParts.pop();
+  const newPath = [...pathParts, newName].join('/');
   try {
-    const parent = oldPath.substring(0, oldPath.lastIndexOf('/'));
-    const newPath = `${parent}/${newName}`;
     await invoke('rename_node', { oldPath, newPath });
     return true;
   } catch (error) {
-    console.info(`[FileSystemService] Renamed mock item: ${oldPath} to ${newName}`);
     if (DEMO_FILE_CONTENTS[oldPath]) {
-      const parent = oldPath.substring(0, oldPath.lastIndexOf('/'));
-      const newPath = `${parent}/${newName}`;
       DEMO_FILE_CONTENTS[newPath] = DEMO_FILE_CONTENTS[oldPath];
       delete DEMO_FILE_CONTENTS[oldPath];
     }
@@ -139,24 +149,20 @@ export async function renameFileSystemItem(oldPath: string, newName: string): Pr
   }
 }
 
-export async function copyFileSystemItem(srcPath: string): Promise<boolean> {
-  const parts = srcPath.split('/');
-  const name = parts.pop() || 'file';
-  const parent = parts.join('/');
-  const extIndex = name.lastIndexOf('.');
-  const destName =
-    extIndex !== -1
-      ? `${name.substring(0, extIndex)}_copy${name.substring(extIndex)}`
-      : `${name}_copy`;
-  const destPath = `${parent}/${destName}`;
+export async function copyFileSystemItem(itemPath: string): Promise<boolean> {
+  const pathParts = itemPath.split('/');
+  const name = pathParts.pop() || 'item';
+  const copyName = name.includes('.')
+    ? name.replace(/(\.[^.]+)$/, '-copy$1')
+    : `${name}-copy`;
+  const destPath = [...pathParts, copyName].join('/');
 
   try {
-    await invoke('copy_node', { srcPath, destPath });
+    await invoke('copy_node', { srcPath: itemPath, destPath });
     return true;
   } catch (error) {
-    console.info(`[FileSystemService] Duplicated mock item: ${srcPath} to ${destPath}`);
-    if (DEMO_FILE_CONTENTS[srcPath]) {
-      DEMO_FILE_CONTENTS[destPath] = `// Copy of ${name}\n` + DEMO_FILE_CONTENTS[srcPath];
+    if (DEMO_FILE_CONTENTS[itemPath]) {
+      DEMO_FILE_CONTENTS[destPath] = DEMO_FILE_CONTENTS[itemPath];
     }
     return true;
   }
@@ -167,7 +173,6 @@ export async function deleteFileSystemItem(itemPath: string): Promise<boolean> {
     await invoke('delete_node', { path: itemPath });
     return true;
   } catch (error) {
-    console.info(`[FileSystemService] Deleted mock item: ${itemPath}`);
     delete DEMO_FILE_CONTENTS[itemPath];
     return true;
   }

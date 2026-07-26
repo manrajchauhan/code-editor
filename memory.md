@@ -1,7 +1,7 @@
 # Engineering Memory
 
 ## Current Phase
-- **Advanced Editor Workspace & Side-by-Side Dual View** (COMPLETED)
+- **The Real System Explorer & Native macOS Finder Folder Picker** (COMPLETED)
 
 ---
 
@@ -17,24 +17,23 @@
 - Added Full Integrated Terminal (`@xterm/xterm` & `@xterm/addon-fit` canvas drawer).
 - Added Right-Click Context Menu for File Explorer Tree (`FileTreeContextMenu.tsx`).
 - Added Live Cursor Position Indicator (`Ln X, Col Y`).
-- Added Advanced Editor Workspace Features:
-  - **Split Editor Workspace**: Side-by-side dual Monaco container view (`⌘\`) for editing two files simultaneously.
-  - **Breadcrumbs Navigation Bar**: Interactive path bar (`BreadcrumbsBar.tsx`) above Monaco with file/folder icons.
-  - **Format Document**: `⌥⇧F` / `Alt+Shift+F` native document formatting action.
-  - **Sticky Scroll & Bracket Colorization**: Enabled in Monaco for high readability.
-  - **Editor Keybindings Reference**: Modal overlay (`KeybindingsModal.tsx` / `⌘K ⌘S`).
-- Validated build & type safety (`npm run build` completed in 1.06s with 0 errors).
+- Added Advanced Editor Workspace Features (Split view, Breadcrumbs bar, Format Document `⌥⇧F`, Keybindings modal).
+- Added **The Real System Explorer**:
+  - **Native macOS Finder Folder Dialog**: Integrated `rfd` (rusty file dialogs) in Rust for picking real directories on Mac disk via `open_folder_dialog`.
+  - **Workspace Auto-Load**: Automatically loads the workspace root directory on launch.
+  - **Persistent Expanded States**: Subfolder expansion states are preserved across file CRUD operations and refreshes.
+- Validated build & type safety (`npm run build` completed in 1.03s with 0 errors).
 
 ---
 
 ## Current Work
-- All non-AI Editor Workspace features, filesystem CRUD operations, interactive terminal, context menus, cursor indicators, UX tools, and documentation are complete.
+- All non-AI core desktop code editor features, real system file explorer, native folder dialogs, interactive terminal, context menus, cursor indicators, UX tools, and documentation are complete.
 
 ---
 
 ## Architecture Decisions
-- **Side-by-Side Dual Container**: `EditorWorkspace.tsx` manages primary and secondary active tab IDs with independent Monaco instances.
-- **Path Segment Tokenizer**: `BreadcrumbsBar.tsx` breaks down file paths into clickable folder and file icon badges.
+- **Native OS Folder Dialog**: `rfd::AsyncFileDialog` in `src-tauri/src/commands/fs.rs` bound to `open_folder_dialog` Tauri IPC.
+- **Tree Expansion Persistence**: `workspaceStore.ts` tracks expanded node IDs across directory re-scans.
 
 ---
 

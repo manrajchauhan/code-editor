@@ -13,6 +13,16 @@ pub struct FileNode {
 }
 
 #[tauri::command]
+pub async fn open_folder_dialog() -> Result<Option<String>, String> {
+    let folder = rfd::AsyncFileDialog::new()
+        .set_title("Select Project Folder")
+        .pick_folder()
+        .await;
+
+    Ok(folder.map(|f| f.path().to_string_lossy().to_string()))
+}
+
+#[tauri::command]
 pub async fn read_directory_tree(path: String) -> Result<FileNode, String> {
     let p = Path::new(&path);
     if !p.exists() {
@@ -40,7 +50,8 @@ fn read_node_recursive(path: &Path) -> Result<FileNode, String> {
                 let child_path = entry.path();
                 if let Some(child_name) = child_path.file_name() {
                     let s = child_name.to_string_lossy();
-                    if s.starts_with('.') || s == "node_modules" || s == "target" {
+                    // Skip internal .git metadata folder to preserve performance
+                    if s == ".git" {
                         continue;
                     }
                 }
@@ -81,7 +92,8 @@ pub async fn create_file_node(path: String) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn create_dir_node(path: String) -> Result<(), String> {
-    fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {}", e))
+    fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {}", e))?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -92,8 +104,26 @@ pub async fn rename_node(old_path: String, new_path: String) -> Result<(), Strin
 #[tauri::command]
 pub async fn copy_node(src_path: String, dest_path: String) -> Result<(), String> {
     let src = Path::new(&src_path);
-    if src.is_file() {
-        fs::copy(src, &dest_path).map_err(|e| format!("Failed to copy file: {}", e))?;
+    let dest = Path::new(&dest_path);
+    if src.is_dir() {
+        copy_dir_all(src, dest).map_err(|e| format!("Failed to copy directory: {}", e))
+    } else {
+        fs::copy(src, dest)
+            .map(|_| ())
+            .map_err(|e| format!("Failed to copy file: {}", e))
+    }
+}
+
+fn copy_dir_all(src: &Path, dest: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(dest)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(&entry.path(), &dest.join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dest.join(entry.file_name()))?;
+        }
     }
     Ok(())
 }
