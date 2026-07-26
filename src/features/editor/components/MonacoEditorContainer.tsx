@@ -10,7 +10,86 @@ interface MonacoEditorContainerProps {
 
 const GLOBAL_TYPES_DECLARATIONS = `
 declare namespace JSX {
+  interface HTMLAttributes {
+    className?: string;
+    id?: string;
+    style?: React.CSSProperties;
+    onClick?: (event: React.MouseEvent) => void;
+    onChange?: (event: React.ChangeEvent) => void;
+    onSubmit?: (event: React.FormEvent) => void;
+    onKeyDown?: (event: React.KeyboardEvent) => void;
+    onKeyUp?: (event: React.KeyboardEvent) => void;
+    title?: string;
+    children?: React.ReactNode;
+    key?: string | number;
+    ref?: any;
+    role?: string;
+    tabIndex?: number;
+  }
+
+  interface ButtonAttributes extends HTMLAttributes {
+    type?: 'button' | 'submit' | 'reset';
+    disabled?: boolean;
+  }
+
+  interface InputAttributes extends HTMLAttributes {
+    type?: string;
+    value?: any;
+    placeholder?: string;
+    disabled?: boolean;
+    autoFocus?: boolean;
+    checked?: boolean;
+  }
+
+  interface FormAttributes extends HTMLAttributes {
+    action?: string;
+    method?: string;
+  }
+
+  interface AnchorAttributes extends HTMLAttributes {
+    href?: string;
+    target?: string;
+    rel?: string;
+  }
+
+  interface ImageAttributes extends HTMLAttributes {
+    src?: string;
+    alt?: string;
+    width?: number | string;
+    height?: number | string;
+  }
+
   interface IntrinsicElements {
+    div: HTMLAttributes;
+    span: HTMLAttributes;
+    p: HTMLAttributes;
+    h1: HTMLAttributes;
+    h2: HTMLAttributes;
+    h3: HTMLAttributes;
+    h4: HTMLAttributes;
+    h5: HTMLAttributes;
+    h6: HTMLAttributes;
+    header: HTMLAttributes;
+    footer: HTMLAttributes;
+    main: HTMLAttributes;
+    nav: HTMLAttributes;
+    section: HTMLAttributes;
+    article: HTMLAttributes;
+    aside: HTMLAttributes;
+    label: HTMLAttributes;
+    ul: HTMLAttributes;
+    ol: HTMLAttributes;
+    li: HTMLAttributes;
+    button: ButtonAttributes;
+    input: InputAttributes;
+    form: FormAttributes;
+    a: AnchorAttributes;
+    img: ImageAttributes;
+    select: HTMLAttributes;
+    option: HTMLAttributes;
+    textarea: HTMLAttributes;
+    svg: HTMLAttributes;
+    path: HTMLAttributes;
     [elemName: string]: any;
   }
   interface Element {}
@@ -161,7 +240,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
         allowJs: true,
       });
 
-      // Inject Global Type Declarations for React, JSX, DOM, and Node
+      // Inject Global Type Declarations for TSX interfaces, HTMLAttributes, React, and DOM
       tsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/react-globals.d.ts');
       jsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/react-globals.d.ts');
 
