@@ -20,6 +20,42 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
   if (!tab) return null;
 
   const handleEditorMount: OnMount = (editor, monaco) => {
+    // Enable React & JSX compilation options for TypeScript and JavaScript workers
+    if (monaco?.languages?.typescript) {
+      const tsDefaults = monaco.languages.typescript.typescriptDefaults;
+      const jsDefaults = monaco.languages.typescript.javascriptDefaults;
+
+      tsDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ESNext,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+        jsx: monaco.languages.typescript.JsxEmit.ReactJSX || monaco.languages.typescript.JsxEmit.React,
+        jsxFactory: 'React.createElement',
+        reactNamespace: 'React',
+        allowNonTsExtensions: true,
+        allowJs: true,
+      });
+
+      jsDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ESNext,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
+        jsx: monaco.languages.typescript.JsxEmit.ReactJSX || monaco.languages.typescript.JsxEmit.React,
+        allowNonTsExtensions: true,
+        allowJs: true,
+      });
+
+      // Suppress false-positive missing module/type errors (e.g. "Cannot find module 'react'")
+      tsDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: false,
+      });
+
+      jsDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: false,
+      });
+    }
+
     // ⌘S Save shortcut
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       if (onSaveRequested) {
@@ -27,7 +63,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
       }
     });
 
-    // ⌥⇧F Format Document shortcut (safe check)
+    // ⌥⇧F Format Document shortcut
     editor.addCommand(monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF, () => {
       const formatAction = editor.getAction('editor.action.formatDocument');
       if (formatAction) {
@@ -35,7 +71,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
       }
     });
 
-    // Cursor position event listener
+    // Cursor position listener
     editor.onDidChangeCursorPosition((e) => {
       if (e?.position) {
         setCursorPosition(e.position.lineNumber, e.position.column);
