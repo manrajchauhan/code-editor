@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cpu, CheckCircle2, AlertCircle, Command, Terminal, Activity, Zap } from 'lucide-react';
+import { Cpu, CheckCircle2, AlertCircle, Command, Terminal, Activity } from 'lucide-react';
 import { useEditorStore } from '../editor/stores/editorStore';
 import { useSettingsStore } from '../settings/stores/settingsStore';
 import { useCommandStore } from '../command-palette/stores/commandStore';
@@ -12,24 +12,11 @@ export const StatusBar: React.FC = () => {
   const { getActiveTab, cursorPosition } = useEditorStore();
   const { tabSize } = useSettingsStore();
   const { openCommandPalette } = useCommandStore();
-  const { toggleTerminal, isTerminalOpen, setLastExecutionBenchmark } = useTerminalStore();
+  const { toggleTerminal, isTerminalOpen } = useTerminalStore();
   const metrics = useSystemMetrics();
 
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const activeTab = getActiveTab();
-
-  const handleOpenBenchmark = () => {
-    setLastExecutionBenchmark({
-      codeSnippet: activeTab?.content || 'console.log("Benchmark");',
-      command: 'Benchmark Metric',
-      durationMs: 13.25,
-      ipcSpawnMs: 0.45,
-      v8BootMs: 12.30,
-      execStreamMs: 0.18,
-      canvasRenderMs: 0.32,
-      timestamp: Date.now(),
-    });
-  };
 
   return (
     <>
@@ -57,17 +44,6 @@ export const StatusBar: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Performance Benchmark Button */}
-          <button
-            type="button"
-            onClick={handleOpenBenchmark}
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors font-mono text-[10px]"
-            title="Click to view Code Execution Performance Benchmark"
-          >
-            <Zap className="w-3 h-3 text-emerald-400" />
-            <span>Benchmark</span>
-          </button>
-
           <button
             type="button"
             onClick={() => setIsStatusModalOpen(true)}
