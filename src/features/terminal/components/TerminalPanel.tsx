@@ -166,9 +166,14 @@ export const TerminalPanel: React.FC = () => {
     if (commandLine.toLowerCase() === 'clear') {
       term.clear();
     } else {
+      const startTime = performance.now();
       const output = await executeShellCommand(commandLine, activePath);
+      const endTime = performance.now();
+      const durationMs = (endTime - startTime).toFixed(2);
+
       const formattedOutput = output.replace(/\r?\n/g, '\r\n');
       term.write(formattedOutput);
+      term.write(`\x1b[38;2;156;163;175m[⚡ Performance Benchmark]\x1b[0m Execution Duration: \x1b[38;2;74;222;128m${durationMs} ms\x1b[0m\r\n`);
       await refreshWorkspace();
     }
 
