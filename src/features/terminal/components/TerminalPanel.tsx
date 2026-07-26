@@ -2,8 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import { Play, Package, TestTube, Trash2 } from 'lucide-react';
+import { Play, Package, TestTube, Trash2, Code2 } from 'lucide-react';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
+import { useTerminalStore } from '../stores/terminalStore';
 import { executeShellCommand } from '../../../services/fileSystemService';
 
 export const TerminalPanel: React.FC = () => {
@@ -13,6 +14,7 @@ export const TerminalPanel: React.FC = () => {
   const inputBufferRef = useRef<string>('');
 
   const { currentFolderPath, currentFolderName, refreshWorkspace } = useWorkspaceStore();
+  const { pendingRunCommand, clearPendingRunCommand } = useTerminalStore();
 
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -53,7 +55,7 @@ export const TerminalPanel: React.FC = () => {
     };
 
     term.writeln('\x1b[1;38;2;99;102;241mIntegrated Terminal & Process Shell v1.0.0\x1b[0m');
-    term.writeln('\x1b[38;2;156;163;175mFull CLI Access: npm run dev, npm install, cargo, node, git, etc.\x1b[0m');
+    term.writeln('\x1b[38;2;156;163;175mRun Node (.js), TS (.ts), Python (.py), Rust (.rs), Shell (.sh) with "Run Code".\x1b[0m');
     prompt();
 
     term.onData(async (data) => {
@@ -100,6 +102,15 @@ export const TerminalPanel: React.FC = () => {
     };
   }, [currentFolderName]);
 
+  // Effect to execute pending run commands (e.g. from "Run Code" button)
+  useEffect(() => {
+    if (pendingRunCommand && xtermRef.current) {
+      const cmd = pendingRunCommand;
+      clearPendingRunCommand();
+      executeQuickAction(cmd);
+    }
+  }, [pendingRunCommand]);
+
   const runCommand = async (commandLine: string, term: XTerm) => {
     const activePath = currentFolderPath || '/Volumes/Personal Space/Cross Platform Apps/code-editor';
 
@@ -128,7 +139,26 @@ export const TerminalPanel: React.FC = () => {
       {/* Terminal Toolbar Quick Actions */}
       <div className="flex items-center justify-between px-2 py-1 bg-bg-surface border-b border-border-subtle text-[11px] text-text-subtle shrink-0">
         <div className="flex items-center gap-1.5">
-          <span className="font-semibold text-text-main">Quick Actions:</span>
+          <span className="font-semibold text-text-main">Code Runners:</span>
+          <button
+            type="button"
+            onClick={() => executeQuickAction('node --version')}
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors"
+          >
+            <Code2 className="w-3 h-3" />
+            <span>Node JS</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => executeQuickAction('python3 --version')}
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+          >
+            <Code2 className="w-3 h-3" />
+            <span>Python3</span>
+          </button>
+
+          <span className="text-border-subtle mx-1">|</span>
+
           <button
             type="button"
             onClick={() => executeQuickAction('npm run dev')}
