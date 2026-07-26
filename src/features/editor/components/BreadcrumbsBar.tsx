@@ -5,10 +5,11 @@ import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { useTerminalStore } from '../../terminal/stores/terminalStore';
 import { FileIcon } from '../../../components/ui/FileIcon';
 import { readDirectoryTree, readFileText } from '../../../services/fileSystemService';
+import { saveFile } from '../../../services/fileService';
 import { FileNode } from '../../workspace/types/workspace.types';
 
 export const BreadcrumbsBar: React.FC<{ tabId?: string }> = ({ tabId }) => {
-  const { getActiveTab, getSecondaryTab, openTab } = useEditorStore();
+  const { getActiveTab, getSecondaryTab, openTab, markTabSaved } = useEditorStore();
   const { selectNode, toggleNodeExpanded } = useWorkspaceStore();
   const { runCodeFile } = useTerminalStore();
 
@@ -80,8 +81,12 @@ export const BreadcrumbsBar: React.FC<{ tabId?: string }> = ({ tabId }) => {
     }
   };
 
-  const handleRunFile = () => {
+  const handleRunFile = async () => {
     if (!activeTab || !activeTab.filePath) return;
+
+    // Flush and write active file edits directly to physical disk BEFORE running process!
+    await saveFile(activeTab.filePath, activeTab.content);
+    markTabSaved(activeTab.id);
 
     const ext = activeTab.fileName.split('.').pop()?.toLowerCase();
     let cmd = `node "${activeTab.filePath}"`;
