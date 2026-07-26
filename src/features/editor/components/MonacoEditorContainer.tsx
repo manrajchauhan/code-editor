@@ -1,5 +1,5 @@
 import React from 'react';
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor, { OnMount, BeforeMount } from '@monaco-editor/react';
 import { useEditorStore } from '../stores/editorStore';
 import { useSettingsStore } from '../../settings/stores/settingsStore';
 
@@ -9,16 +9,36 @@ interface MonacoEditorContainerProps {
 }
 
 const GLOBAL_TYPES_DECLARATIONS = `
+type RefObject<T = any> = { readonly current: T | null };
+type MutableRefObject<T = any> = { current: T };
+type Ref<T = any> = RefObject<T> | MutableRefObject<T> | ((instance: T | null) => void) | null;
+
+interface Element { [key: string]: any }
+interface HTMLElement extends Element { [key: string]: any }
+interface HTMLInputElement extends HTMLElement { [key: string]: any }
+interface HTMLButtonElement extends HTMLElement { [key: string]: any }
+interface HTMLDivElement extends HTMLElement { [key: string]: any }
+interface HTMLFormElement extends HTMLElement { [key: string]: any }
+interface HTMLSelectElement extends HTMLElement { [key: string]: any }
+interface HTMLTextAreaElement extends HTMLElement { [key: string]: any }
+interface HTMLAnchorElement extends HTMLElement { [key: string]: any }
+interface HTMLImageElement extends HTMLElement { [key: string]: any }
+
+type ChangeEvent<T = any> = { target: T; currentTarget: T; preventDefault(): void; stopPropagation(): void };
+type MouseEvent<T = any> = { target: T; clientX: number; clientY: number; preventDefault(): void; stopPropagation(): void };
+type KeyboardEvent<T = any> = { key: string; code: string; metaKey: boolean; ctrlKey: boolean; altKey: boolean; shiftKey: boolean; preventDefault(): void; stopPropagation(): void };
+type FormEvent<T = any> = { preventDefault(): void; stopPropagation(): void };
+
 declare namespace JSX {
   interface HTMLAttributes {
     className?: string;
     id?: string;
     style?: React.CSSProperties;
-    onClick?: (event: React.MouseEvent) => void;
-    onChange?: (event: React.ChangeEvent) => void;
-    onSubmit?: (event: React.FormEvent) => void;
-    onKeyDown?: (event: React.KeyboardEvent) => void;
-    onKeyUp?: (event: React.KeyboardEvent) => void;
+    onClick?: (event: MouseEvent) => void;
+    onChange?: (event: ChangeEvent) => void;
+    onSubmit?: (event: FormEvent) => void;
+    onKeyDown?: (event: KeyboardEvent) => void;
+    onKeyUp?: (event: KeyboardEvent) => void;
     title?: string;
     children?: React.ReactNode;
     key?: string | number;
@@ -102,17 +122,19 @@ declare namespace React {
   type FC<P = {}> = (props: P) => any;
   type FunctionComponent<P = {}> = (props: P) => any;
   type CSSProperties = { [key: string]: any };
-  type MouseEvent<T = any> = any;
-  type KeyboardEvent<T = any> = any;
-  type FormEvent<T = any> = any;
-  type ChangeEvent<T = any> = any;
+  type RefObject<T = any> = { readonly current: T | null };
+  type MutableRefObject<T = any> = { current: T };
+  type MouseEvent<T = any> = { target: T; clientX: number; clientY: number; preventDefault(): void; stopPropagation(): void };
+  type KeyboardEvent<T = any> = { key: string; code: string; metaKey: boolean; ctrlKey: boolean; altKey: boolean; shiftKey: boolean; preventDefault(): void; stopPropagation(): void };
+  type FormEvent<T = any> = { preventDefault(): void; stopPropagation(): void };
+  type ChangeEvent<T = any> = { target: T; currentTarget: T; preventDefault(): void; stopPropagation(): void };
 
   function useState<T>(initialState: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
   function useEffect(effect: () => void | (() => void), deps?: any[]): void;
   function useContext<T>(context: any): T;
   function useMemo<T>(factory: () => T, deps?: any[]): T;
   function useCallback<T extends (...args: any[]) => any>(callback: T, deps?: any[]): T;
-  function useRef<T>(initialValue?: T): { current: T };
+  function useRef<T>(initialValue?: T): RefObject<T>;
   function createContext<T>(defaultValue: T): any;
   function createElement(type: any, props?: any, ...children: any[]): any;
 }
@@ -148,6 +170,48 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
   const tab = tabId ? (tabId === 'secondary' ? getSecondaryTab() : getActiveTab()) : getActiveTab();
 
   if (!tab) return null;
+
+  const handleBeforeMount: BeforeMount = (monaco) => {
+    if (monaco?.languages?.typescript) {
+      const tsDefaults = monaco.languages.typescript.typescriptDefaults;
+      const jsDefaults = monaco.languages.typescript.javascriptDefaults;
+
+      tsDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ESNext,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+        jsx: monaco.languages.typescript.JsxEmit.ReactJSX || monaco.languages.typescript.JsxEmit.React,
+        jsxFactory: 'React.createElement',
+        reactNamespace: 'React',
+        allowNonTsExtensions: true,
+        allowJs: true,
+      });
+
+      jsDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ESNext,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
+        jsx: monaco.languages.typescript.JsxEmit.ReactJSX || monaco.languages.typescript.JsxEmit.React,
+        allowNonTsExtensions: true,
+        allowJs: true,
+      });
+
+      // Inject Global Type Declarations for RefObject, HTMLInputElement, ChangeEvent, React & DOM
+      tsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/globals.d.ts');
+      jsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/globals.d.ts');
+
+      tsDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: false,
+        noSuggestionDiagnostics: true,
+      });
+
+      jsDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: false,
+        noSuggestionDiagnostics: true,
+      });
+    }
+  };
 
   const handleEditorMount: OnMount = (editor, monaco) => {
     // 1. Define Premium Editor Themes
@@ -216,45 +280,6 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
       },
     });
 
-    // 2. Configure TypeScript & JavaScript Workers with Global Declarations
-    if (monaco?.languages?.typescript) {
-      const tsDefaults = monaco.languages.typescript.typescriptDefaults;
-      const jsDefaults = monaco.languages.typescript.javascriptDefaults;
-
-      tsDefaults.setCompilerOptions({
-        target: monaco.languages.typescript.ScriptTarget.ESNext,
-        module: monaco.languages.typescript.ModuleKind.ESNext,
-        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-        jsx: monaco.languages.typescript.JsxEmit.ReactJSX || monaco.languages.typescript.JsxEmit.React,
-        jsxFactory: 'React.createElement',
-        reactNamespace: 'React',
-        allowNonTsExtensions: true,
-        allowJs: true,
-      });
-
-      jsDefaults.setCompilerOptions({
-        target: monaco.languages.typescript.ScriptTarget.ESNext,
-        module: monaco.languages.typescript.ModuleKind.ESNext,
-        jsx: monaco.languages.typescript.JsxEmit.ReactJSX || monaco.languages.typescript.JsxEmit.React,
-        allowNonTsExtensions: true,
-        allowJs: true,
-      });
-
-      // Inject Global Type Declarations for TSX interfaces, HTMLAttributes, React, and DOM
-      tsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/react-globals.d.ts');
-      jsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/react-globals.d.ts');
-
-      tsDefaults.setDiagnosticsOptions({
-        noSemanticValidation: true,
-        noSyntaxValidation: false,
-      });
-
-      jsDefaults.setDiagnosticsOptions({
-        noSemanticValidation: true,
-        noSyntaxValidation: false,
-      });
-    }
-
     // ⌘S Save shortcut
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       if (onSaveRequested) {
@@ -287,6 +312,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
         language={tab.language || 'plaintext'}
         value={tab.content ?? ''}
         onChange={(val) => updateTabContent(tab.id, val ?? '')}
+        beforeMount={handleBeforeMount}
         onMount={handleEditorMount}
         theme={theme || 'tokyo-night'}
         options={{
