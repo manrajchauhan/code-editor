@@ -15,6 +15,7 @@ import { useWorkspaceStore } from '../stores/workspaceStore';
 import { useEditorStore } from '../../editor/stores/editorStore';
 import { detectLanguage } from '../../editor/utils/languageDetector';
 import { readFileText } from '../../../services/fileSystemService';
+import { FileTreeContextMenu } from './FileTreeContextMenu';
 
 interface FileTreeItemProps {
   node: FileNode;
@@ -28,6 +29,9 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
 
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(node.name);
+
+  // Context Menu State
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   const isSelected = selectedNodeId === node.id;
   const paddingLeft = depth * 12 + 12;
@@ -48,6 +52,13 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
         language: detectLanguage(node.name),
       });
     }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    selectNode(node.id);
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
   };
 
   const handleRenameSubmit = async (e: React.FormEvent) => {
@@ -88,6 +99,16 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
 
   return (
     <div className="flex flex-col select-none">
+      {contextMenuPos && (
+        <FileTreeContextMenu
+          x={contextMenuPos.x}
+          y={contextMenuPos.y}
+          node={node}
+          onClose={() => setContextMenuPos(null)}
+          onStartRename={() => setIsRenaming(true)}
+        />
+      )}
+
       {isRenaming ? (
         <form
           onSubmit={handleRenameSubmit}
@@ -106,6 +127,7 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
       ) : (
         <div
           onClick={handleClick}
+          onContextMenu={handleContextMenu}
           style={{ paddingLeft: `${paddingLeft}px` }}
           className={`group flex items-center justify-between py-1 pr-2 cursor-pointer text-xs transition-colors rounded ${
             isSelected

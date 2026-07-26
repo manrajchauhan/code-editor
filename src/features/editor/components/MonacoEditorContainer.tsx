@@ -8,7 +8,7 @@ interface MonacoEditorContainerProps {
 }
 
 export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({ onSaveRequested }) => {
-  const { getActiveTab, updateTabContent } = useEditorStore();
+  const { getActiveTab, updateTabContent, setCursorPosition } = useEditorStore();
   const { theme, fontSize, tabSize, wordWrap, minimap } = useSettingsStore();
 
   const activeTab = getActiveTab();
@@ -16,10 +16,16 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({ on
   if (!activeTab) return null;
 
   const handleEditorMount: OnMount = (editor, monaco) => {
+    // Save shortcut ⌘S / Ctrl+S
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       if (onSaveRequested) {
         onSaveRequested();
       }
+    });
+
+    // Update cursor position Ln X, Col Y in status bar
+    editor.onDidChangeCursorPosition((e) => {
+      setCursorPosition(e.position.lineNumber, e.position.column);
     });
   };
 

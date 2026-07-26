@@ -8,7 +8,7 @@ import { useSystemMetrics } from '../system-status/hooks/useSystemMetrics';
 import { SystemStatusModal } from '../system-status/components/SystemStatusModal';
 
 export const StatusBar: React.FC = () => {
-  const { getActiveTab } = useEditorStore();
+  const { getActiveTab, cursorPosition } = useEditorStore();
   const { tabSize } = useSettingsStore();
   const { openCommandPalette } = useCommandStore();
   const { toggleTerminal, isTerminalOpen } = useTerminalStore();
@@ -77,6 +77,9 @@ export const StatusBar: React.FC = () => {
           </button>
 
           <span className="text-border-strong">|</span>
+          <span className="font-mono">
+            Ln {cursorPosition.line}, Col {cursorPosition.column}
+          </span>
           <span>Spaces: {tabSize}</span>
           <span>UTF-8</span>
           <span className="uppercase font-mono">{activeTab ? activeTab.language : 'Plain Text'}</span>

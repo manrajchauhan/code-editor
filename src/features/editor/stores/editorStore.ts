@@ -9,19 +9,19 @@ const INITIAL_WELCOME_TAB: EditorTab = {
   fileName: 'welcome.ts',
   filePath: '/welcome.ts',
   content: `// Welcome to your Local-First Code Editor!
-// Phase 1 Editor Core is fully active.
+// Context menu & cursor position status indicators active.
 
 export function greetDeveloper(name: string): string {
-  return \`Hello \${name}! Start editing your local files seamlessly.\`;
+  return \`Hello \${name}! Right-click files in tree for quick actions.\`;
 }
 
 console.log(greetDeveloper('Developer'));
 `,
   savedContent: `// Welcome to your Local-First Code Editor!
-// Phase 1 Editor Core is fully active.
+// Context menu & cursor position status indicators active.
 
 export function greetDeveloper(name: string): string {
-  return \`Hello \${name}! Start editing your local files seamlessly.\`;
+  return \`Hello \${name}! Right-click files in tree for quick actions.\`;
 }
 
 console.log(greetDeveloper('Developer'));
@@ -33,6 +33,7 @@ console.log(greetDeveloper('Developer'));
 export const useEditorStore = create<EditorState>((set, get) => ({
   tabs: [INITIAL_WELCOME_TAB],
   activeTabId: 'welcome-tab',
+  cursorPosition: { line: 1, column: 1 },
 
   openTab: (tabData) => {
     const { tabs } = get();
@@ -84,6 +85,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   setActiveTab: (id) => set({ activeTabId: id }),
+
+  setCursorPosition: (line, column) =>
+    set({
+      cursorPosition: { line, column },
+    }),
 
   updateTabContent: (id, newContent) => {
     set((state) => ({
