@@ -1,7 +1,7 @@
 # Engineering Memory
 
 ## Current Phase
-- **Explorer Context Menu, Live Cursor Position Indicator & Status Bar Refinements** (COMPLETED)
+- **Advanced Editor Workspace & Side-by-Side Dual View** (COMPLETED)
 
 ---
 
@@ -15,24 +15,26 @@
 - Added Real-time System Running Status Monitor (`SystemStatusModal.tsx` & RAM heap indicator pill).
 - Added Full Filesystem CRUD Operations (Create, Read, Update, Rename, Duplicate, Delete).
 - Added Full Integrated Terminal (`@xterm/xterm` & `@xterm/addon-fit` canvas drawer).
-- Added Right-Click Context Menu for File Explorer Tree (`FileTreeContextMenu.tsx`):
-  - Actions: New File, New Folder, Rename (`F2`), Duplicate, Copy Path, Delete.
-- Added Live Cursor Position Indicator (`Ln X, Col Y`):
-  - Listens to Monaco `onDidChangeCursorPosition` events and updates status bar coordinates in real time.
-- Validated build & type safety (`npm run build` completed in 1.86s with 0 errors).
-- Pushed commit `77bbd00` to GitHub `https://github.com/manrajchauhan/code-editor.git` (main).
+- Added Right-Click Context Menu for File Explorer Tree (`FileTreeContextMenu.tsx`).
+- Added Live Cursor Position Indicator (`Ln X, Col Y`).
+- Added Advanced Editor Workspace Features:
+  - **Split Editor Workspace**: Side-by-side dual Monaco container view (`⌘\`) for editing two files simultaneously.
+  - **Breadcrumbs Navigation Bar**: Interactive path bar (`BreadcrumbsBar.tsx`) above Monaco with file/folder icons.
+  - **Format Document**: `⌥⇧F` / `Alt+Shift+F` native document formatting action.
+  - **Sticky Scroll & Bracket Colorization**: Enabled in Monaco for high readability.
+  - **Editor Keybindings Reference**: Modal overlay (`KeybindingsModal.tsx` / `⌘K ⌘S`).
+- Validated build & type safety (`npm run build` completed in 1.06s with 0 errors).
 
 ---
 
 ## Current Work
-- All non-AI core desktop code editor features, filesystem CRUD operations, interactive terminal, context menus, cursor indicators, UX tools, and documentation are complete and published.
+- All non-AI Editor Workspace features, filesystem CRUD operations, interactive terminal, context menus, cursor indicators, UX tools, and documentation are complete.
 
 ---
 
 ## Architecture Decisions
-- **Full FS Native IPC**: Tauri Rust handlers in `src-tauri/src/commands/fs.rs` with web dev fallback in `fileSystemService.ts`.
-- **Canvas Terminal**: `@xterm/xterm` canvas rendering with automatic `@xterm/addon-fit` sizing.
-- **Monaco Cursor Event Stream**: Efficient position listener bound to Zustand `editorStore`.
+- **Side-by-Side Dual Container**: `EditorWorkspace.tsx` manages primary and secondary active tab IDs with independent Monaco instances.
+- **Path Segment Tokenizer**: `BreadcrumbsBar.tsx` breaks down file paths into clickable folder and file icon badges.
 
 ---
 

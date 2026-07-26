@@ -14,18 +14,21 @@ import { saveFile } from '../services/fileService';
 
 export const App: React.FC = () => {
   const { toggleSidebar } = useLayoutStore();
-  const { getActiveTab, markTabSaved, closeTab, newUntitledTab } = useEditorStore();
+  const { getActiveTab, markTabSaved, closeTab, newUntitledTab, toggleSplitView } = useEditorStore();
   const { toggleCommandPalette } = useCommandStore();
   const { toggleTerminal } = useTerminalStore();
 
-  // Global keyboard shortcuts (⌘B, ⌘S, ⌘W, ⌘N, ⌘K, ⌘P, ⌘T, ⌘J)
+  // Global keyboard shortcuts (⌘B, ⌘S, ⌘W, ⌘N, ⌘K, ⌘P, ⌘T, ⌘J, ⌘\)
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
 
       const key = e.key.toLowerCase();
 
-      if (key === 't' || key === 'j' || key === '`') {
+      if (e.key === '\\') {
+        e.preventDefault();
+        toggleSplitView();
+      } else if (key === 't' || key === 'j' || key === '`') {
         e.preventDefault();
         toggleTerminal();
       } else if (key === 'k' || key === 'p') {
@@ -61,6 +64,7 @@ export const App: React.FC = () => {
     toggleSidebar,
     toggleCommandPalette,
     toggleTerminal,
+    toggleSplitView,
     getActiveTab,
     markTabSaved,
     closeTab,
@@ -69,7 +73,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-bg-main font-sans">
-      {/* Command Palette Modal */}
+      {/* Command Palette & Keybindings Modals */}
       <CommandPaletteModal />
 
       {/* Titlebar / Topbar */}
@@ -78,7 +82,7 @@ export const App: React.FC = () => {
           <span className="font-semibold text-text-main tracking-tight">Code Editor</span>
         </div>
         <div className="text-[11px] text-text-subtle">
-          Full FS CRUD & Terminal Integrated
+          Editor Workspace & Dual View
         </div>
       </header>
 

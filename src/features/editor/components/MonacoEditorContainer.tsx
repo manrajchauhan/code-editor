@@ -4,42 +4,56 @@ import { useEditorStore } from '../stores/editorStore';
 import { useSettingsStore } from '../../settings/stores/settingsStore';
 
 interface MonacoEditorContainerProps {
+  tabId?: string;
   onSaveRequested?: () => void;
 }
 
-export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({ onSaveRequested }) => {
-  const { getActiveTab, updateTabContent, setCursorPosition } = useEditorStore();
+export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
+  tabId,
+  onSaveRequested,
+}) => {
+  const { getActiveTab, getSecondaryTab, updateTabContent, setCursorPosition } = useEditorStore();
   const { theme, fontSize, tabSize, wordWrap, minimap } = useSettingsStore();
 
-  const activeTab = getActiveTab();
+  const tab = tabId ? (tabId === 'secondary' ? getSecondaryTab() : getActiveTab()) : getActiveTab();
 
-  if (!activeTab) return null;
+  if (!tab) return null;
 
   const handleEditorMount: OnMount = (editor, monaco) => {
-    // Save shortcut ⌘S / Ctrl+S
+    // ⌘S Save shortcut
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       if (onSaveRequested) {
         onSaveRequested();
       }
     });
 
-    // Update cursor position Ln X, Col Y in status bar
+    // ⌥⇧F Format Document shortcut (safe check)
+    editor.addCommand(monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF, () => {
+      const formatAction = editor.getAction('editor.action.formatDocument');
+      if (formatAction) {
+        formatAction.run().catch(() => {});
+      }
+    });
+
+    // Cursor position event listener
     editor.onDidChangeCursorPosition((e) => {
-      setCursorPosition(e.position.lineNumber, e.position.column);
+      if (e?.position) {
+        setCursorPosition(e.position.lineNumber, e.position.column);
+      }
     });
   };
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#0d0e11]">
       <Editor
-        key={activeTab.id}
+        key={tab.id}
         height="100%"
         width="100%"
-        language={activeTab.language}
-        value={activeTab.content}
-        onChange={(val) => updateTabContent(activeTab.id, val ?? '')}
+        language={tab.language || 'plaintext'}
+        value={tab.content ?? ''}
+        onChange={(val) => updateTabContent(tab.id, val ?? '')}
         onMount={handleEditorMount}
-        theme={theme}
+        theme={theme || 'vs-dark'}
         options={{
           fontSize,
           fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
@@ -49,7 +63,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({ on
           automaticLayout: true,
           tabSize,
           wordWrap,
-          padding: { top: 12, bottom: 12 },
+          padding: { top: 10, bottom: 10 },
           smoothScrolling: true,
           cursorBlinking: 'smooth',
           cursorSmoothCaretAnimation: 'on',

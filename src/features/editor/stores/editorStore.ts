@@ -9,19 +9,19 @@ const INITIAL_WELCOME_TAB: EditorTab = {
   fileName: 'welcome.ts',
   filePath: '/welcome.ts',
   content: `// Welcome to your Local-First Code Editor!
-// Context menu & cursor position status indicators active.
+// Side-by-Side Split View & Breadcrumbs Active.
 
 export function greetDeveloper(name: string): string {
-  return \`Hello \${name}! Right-click files in tree for quick actions.\`;
+  return \`Hello \${name}! Toggle side-by-side editing with ⌘\\\`;
 }
 
 console.log(greetDeveloper('Developer'));
 `,
   savedContent: `// Welcome to your Local-First Code Editor!
-// Context menu & cursor position status indicators active.
+// Side-by-Side Split View & Breadcrumbs Active.
 
 export function greetDeveloper(name: string): string {
-  return \`Hello \${name}! Right-click files in tree for quick actions.\`;
+  return \`Hello \${name}! Toggle side-by-side editing with ⌘\\\`;
 }
 
 console.log(greetDeveloper('Developer'));
@@ -33,6 +33,8 @@ console.log(greetDeveloper('Developer'));
 export const useEditorStore = create<EditorState>((set, get) => ({
   tabs: [INITIAL_WELCOME_TAB],
   activeTabId: 'welcome-tab',
+  secondaryTabId: null,
+  isSplitView: false,
   cursorPosition: { line: 1, column: 1 },
 
   openTab: (tabData) => {
@@ -59,6 +61,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => ({
       tabs: [...state.tabs, newTab],
       activeTabId: newTab.id,
+      secondaryTabId: state.isSplitView ? state.secondaryTabId || newTab.id : state.secondaryTabId,
     }));
   },
 
@@ -66,6 +69,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => {
       const remaining = state.tabs.filter((t) => t.id !== id);
       let nextActiveId = state.activeTabId;
+      let nextSecondaryId = state.secondaryTabId;
 
       if (state.activeTabId === id) {
         if (remaining.length > 0) {
@@ -77,14 +81,29 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         }
       }
 
+      if (state.secondaryTabId === id) {
+        nextSecondaryId = remaining.length > 0 ? remaining[0].id : null;
+      }
+
       return {
         tabs: remaining,
         activeTabId: nextActiveId,
+        secondaryTabId: nextSecondaryId,
       };
     });
   },
 
   setActiveTab: (id) => set({ activeTabId: id }),
+  setSecondaryTab: (id) => set({ secondaryTabId: id }),
+
+  toggleSplitView: () =>
+    set((state) => {
+      const nextSplit = !state.isSplitView;
+      const secondaryId = nextSplit
+        ? state.secondaryTabId || state.tabs.find((t) => t.id !== state.activeTabId)?.id || state.activeTabId
+        : null;
+      return { isSplitView: nextSplit, secondaryTabId: secondaryId };
+    }),
 
   setCursorPosition: (line, column) =>
     set({
@@ -131,5 +150,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   getActiveTab: () => {
     const { tabs, activeTabId } = get();
     return tabs.find((t) => t.id === activeTabId);
+  },
+
+  getSecondaryTab: () => {
+    const { tabs, secondaryTabId } = get();
+    return tabs.find((t) => t.id === secondaryTabId);
   },
 }));

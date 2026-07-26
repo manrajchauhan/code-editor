@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Command, FileText, Layout, Settings, Activity } from 'lucide-react';
+import { Search, Command, FileText, Layout, Settings, Activity, Columns, Keyboard } from 'lucide-react';
 import { useCommandStore } from '../stores/commandStore';
 import { useEditorStore } from '../../editor/stores/editorStore';
 import { useLayoutStore } from '../../../stores/layoutStore';
@@ -7,20 +7,38 @@ import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { useDiagnosticsStore } from '../../diagnostics/stores/diagnosticsStore';
 import { CommandItem } from '../types/command.types';
 import { SystemStatusModal } from '../../system-status/components/SystemStatusModal';
+import { KeybindingsModal } from '../../keybindings/components/KeybindingsModal';
 
 export const CommandPaletteModal: React.FC = () => {
   const { isOpen, query, setQuery, closeCommandPalette } = useCommandStore();
-  const { getActiveTab, markTabSaved, closeTab, newUntitledTab } = useEditorStore();
+  const { getActiveTab, markTabSaved, closeTab, newUntitledTab, toggleSplitView } = useEditorStore();
   const { toggleSidebar, setActiveView } = useLayoutStore();
   const { openFolder } = useWorkspaceStore();
   const { toggleDiagnostics } = useDiagnosticsStore();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
+  const [isKeybindingsModalOpen, setIsKeybindingsModalOpen] = useState(false);
 
   const activeTab = getActiveTab();
 
   const commands: CommandItem[] = [
+    {
+      id: 'keybindings-ref',
+      title: 'Help: View Keyboard Shortcuts',
+      subtitle: 'Show list of all editor hotkeys',
+      category: 'View',
+      shortcut: '⌘K ⌘S',
+      action: () => setIsKeybindingsModalOpen(true),
+    },
+    {
+      id: 'toggle-split',
+      title: 'View: Toggle Split Editor Panes',
+      subtitle: 'Edit or view files side-by-side',
+      category: 'View',
+      shortcut: '⌘\\',
+      action: () => toggleSplitView(),
+    },
     {
       id: 'system-status',
       title: 'System: View Full System Running Status',
@@ -65,10 +83,10 @@ export const CommandPaletteModal: React.FC = () => {
     },
     {
       id: 'toggle-diagnostics',
-      title: 'Toggle Problems & Output Panel',
+      title: 'Toggle Terminal & Problems Panel',
       subtitle: 'Open or close bottom drawer',
       category: 'View',
-      shortcut: '⌘J',
+      shortcut: '⌘T',
       action: () => toggleDiagnostics(),
     },
     {
@@ -143,6 +161,7 @@ export const CommandPaletteModal: React.FC = () => {
   return (
     <>
       <SystemStatusModal isOpen={isSystemModalOpen} onClose={() => setIsSystemModalOpen(false)} />
+      <KeybindingsModal isOpen={isKeybindingsModalOpen} onClose={() => setIsKeybindingsModalOpen(false)} />
 
       {isOpen && (
         <div
@@ -192,8 +211,13 @@ export const CommandPaletteModal: React.FC = () => {
                     >
                       <div className="flex items-center gap-2.5">
                         {cmd.id === 'system-status' && <Activity className="w-4 h-4 text-emerald-400 shrink-0" />}
+                        {cmd.id === 'toggle-split' && <Columns className="w-4 h-4 text-accent shrink-0" />}
+                        {cmd.id === 'keybindings-ref' && <Keyboard className="w-4 h-4 text-accent shrink-0" />}
                         {cmd.category === 'File' && <FileText className="w-4 h-4 shrink-0" />}
-                        {cmd.category === 'View' && cmd.id !== 'system-status' && <Layout className="w-4 h-4 shrink-0" />}
+                        {cmd.category === 'View' &&
+                          cmd.id !== 'system-status' &&
+                          cmd.id !== 'toggle-split' &&
+                          cmd.id !== 'keybindings-ref' && <Layout className="w-4 h-4 shrink-0" />}
                         {cmd.category === 'Settings' && <Settings className="w-4 h-4 shrink-0" />}
                         {cmd.category === 'Editor' && <Command className="w-4 h-4 shrink-0" />}
                         <div className="flex flex-col">

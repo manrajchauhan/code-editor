@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    local_code_editor_lib::run();
+    local_code_editor::run();
 }
