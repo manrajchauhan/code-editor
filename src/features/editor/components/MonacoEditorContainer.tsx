@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor, { OnMount, BeforeMount } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { useEditorStore } from '../stores/editorStore';
 import { useSettingsStore } from '../../settings/stores/settingsStore';
+import { registerSnippets } from '../snippets/snippetManager';
 
 interface MonacoEditorContainerProps {
   tabId?: string;
@@ -42,6 +43,10 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
     );
   }
 
+  const handleBeforeMount: BeforeMount = (monaco) => {
+    registerSnippets(monaco);
+  };
+
   const handleEditorMount: OnMount = (editorInstance, monaco) => {
     editorRef.current = editorInstance;
 
@@ -78,6 +83,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
         language={tab.language || 'plaintext'}
         value={tab.content ?? ''}
         onChange={(val) => updateTabContent(tab.id, val ?? '')}
+        beforeMount={handleBeforeMount}
         onMount={handleEditorMount}
         theme={theme || 'vs-dark'}
         options={{
@@ -97,6 +103,8 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
           cursorSmoothCaretAnimation: 'on',
           renderLineHighlight: 'all',
           lineHeight: Math.round(fontSize * 1.5),
+          snippetSuggestions: 'top',
+          tabCompletion: 'on',
         }}
       />
     </div>
