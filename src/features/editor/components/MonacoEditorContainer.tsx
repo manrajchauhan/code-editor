@@ -365,6 +365,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
         key={tab.id}
         height="100%"
         width="100%"
+        path={tab.filePath || tab.id}
         language={tab.language || 'plaintext'}
         value={tab.content ?? ''}
         onChange={(val) => updateTabContent(tab.id, val ?? '')}
