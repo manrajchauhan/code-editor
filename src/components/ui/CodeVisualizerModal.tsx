@@ -29,7 +29,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
   const [speed, setSpeed] = useState(600);
   const [finalResult, setFinalResult] = useState<string | null>(null);
 
-  // Advanced Multi-Algorithm Educational Trace Generator Engine
+  // Fully Loaded Universal Educational Algorithm Trace Generator
   useEffect(() => {
     if (!isOpen || !code.trim()) return;
 
@@ -40,9 +40,239 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
       const lowerCode = code.toLowerCase();
 
       // -------------------------------------------------------------
-      // Pattern 1: Two Sum (Hash Map / Object Lookup)
+      // Pattern 1: Sum of Array Elements / Numbers (sumOfArray)
       // -------------------------------------------------------------
-      if (lowerCode.includes('twosum') || (lowerCode.includes('map') && lowerCode.includes('target'))) {
+      if (lowerCode.includes('sum') || lowerCode.includes('total')) {
+        const arr = [10, 20, 30, 40, 50];
+        let sum = 0;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const arr = [${arr.join(', ')}]; let sum = 0;`,
+          scopeName: 'Sum Array Scope',
+          variables: { array: JSON.stringify(arr), sum: 0 },
+          condition: 'Initialize Array & Sum Accumulator',
+          conditionMet: true,
+          callStack: ['main()', 'findSum()'],
+          arrayState: [...arr],
+          explanation: `Sum Accumulator: Initialized input array [${arr.join(', ')}] with initial sum = 0.`,
+        });
+
+        for (let i = 0; i < arr.length; i++) {
+          const val = arr[i];
+          const prevSum = sum;
+          sum += val;
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `sum += arr[${i}]; // sum = ${prevSum} + ${val} = ${sum}`,
+            scopeName: `Adding Element [${i}]`,
+            variables: { i, 'arr[i]': val, previousSum: prevSum, currentSum: sum },
+            condition: `Accumulate ${val}`,
+            conditionMet: true,
+            callStack: ['main()', 'findSum()'],
+            arrayState: [...arr],
+            activeIndices: [i],
+            output: `Added ${val} -> Total Sum = ${sum}`,
+            explanation: `Added element arr[${i}] (${val}) to accumulator sum (${prevSum}). New total sum = ${sum}.`,
+          });
+        }
+
+        resultOutput = String(sum);
+      }
+      // -------------------------------------------------------------
+      // Pattern 2: Find Maximum / Minimum Element (findMax / findMin)
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('max') || lowerCode.includes('min') || lowerCode.includes('largest')) {
+        const arr = [14, 52, 98, 23, 7];
+        let maxVal = arr[0];
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const arr = [${arr.join(', ')}]; let max = arr[0]; // ${maxVal}`,
+          scopeName: 'FindMax Scope',
+          variables: { array: JSON.stringify(arr), currentMax: maxVal },
+          condition: 'Initialize Max Pointer with First Element',
+          conditionMet: true,
+          callStack: ['main()', 'findMax()'],
+          arrayState: [...arr],
+          activeIndices: [0],
+          explanation: `Find Max: Set initial max value to first element arr[0] = ${maxVal}.`,
+        });
+
+        for (let i = 1; i < arr.length; i++) {
+          const val = arr[i];
+          const isNewMax = val > maxVal;
+
+          if (isNewMax) {
+            maxVal = val;
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `if (arr[${i}] > max) -> max = ${val} // ${val} > previousMax`,
+              scopeName: `Comparing Index [${i}]`,
+              variables: { i, 'arr[i]': val, newMax: maxVal },
+              condition: `${val} > currentMax`,
+              conditionMet: true,
+              callStack: ['main()', 'findMax()'],
+              arrayState: [...arr],
+              activeIndices: [i],
+              output: `Found new maximum: ${maxVal}`,
+              explanation: `Element arr[${i}] (${val}) > current max. Updated maximum value to ${maxVal}!`,
+            });
+          } else {
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `if (arr[${i}] > max) // ${val} <= max`,
+              scopeName: `Comparing Index [${i}]`,
+              variables: { i, 'arr[i]': val, max: maxVal },
+              condition: `${val} > currentMax`,
+              conditionMet: false,
+              callStack: ['main()', 'findMax()'],
+              arrayState: [...arr],
+              activeIndices: [i],
+              explanation: `Element arr[${i}] (${val}) <= current max (${maxVal}). Maximum remains ${maxVal}.`,
+            });
+          }
+        }
+
+        resultOutput = String(maxVal);
+      }
+      // -------------------------------------------------------------
+      // Pattern 3: Prime Number Checker (isPrime)
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('prime')) {
+        const num = 17;
+        let isPrime = true;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const num = ${num}; let isPrime = true;`,
+          scopeName: 'PrimeCheck Scope',
+          variables: { num, isPrime: true },
+          condition: 'Initialize Prime Verification',
+          conditionMet: true,
+          callStack: ['main()', 'isPrime()'],
+          explanation: `Prime Checker: Verifying if number ${num} is prime (has no divisors other than 1 and ${num}).`,
+        });
+
+        for (let i = 2; i * i <= num; i++) {
+          const remainder = num % i;
+          const isDivisible = remainder === 0;
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `if (${num} % ${i} === 0) // Remainder = ${remainder}`,
+            scopeName: `Testing Divisor i=${i}`,
+            variables: { num, divisor: i, remainder, isPrime: !isDivisible },
+            condition: `${num} % ${i} === 0`,
+            conditionMet: isDivisible,
+            callStack: ['main()', 'isPrime()'],
+            output: isDivisible ? `${num} is divisible by ${i}` : `${num} % ${i} !== 0`,
+            explanation: isDivisible
+              ? `${num} is divisible by ${i} (remainder 0). ${num} is NOT a prime number.`
+              : `${num} % ${i} = ${remainder} (not 0). No divisor found at ${i}.`,
+          });
+
+          if (isDivisible) {
+            isPrime = false;
+            break;
+          }
+        }
+
+        resultOutput = isPrime ? `true (${num} is Prime)` : `false (${num} is Not Prime)`;
+      }
+      // -------------------------------------------------------------
+      // Pattern 4: Count Vowels in String (countVowels)
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('vowel')) {
+        const str = 'javascript';
+        const vowels = 'aeiou';
+        const chars = str.split('');
+        let vowelCount = 0;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const str = "${str}"; let count = 0;`,
+          scopeName: 'CountVowels Scope',
+          variables: { string: str, vowelCount: 0 },
+          condition: 'Initialize String & Vowel Counter',
+          conditionMet: true,
+          callStack: ['main()', 'countVowels()'],
+          arrayState: [...chars],
+          explanation: `Vowel Counter: Counting vowels ('a','e','i','o','u') in string "${str}".`,
+        });
+
+        chars.forEach((char, idx) => {
+          const isVowel = vowels.includes(char);
+          if (isVowel) vowelCount++;
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `if ('aeiou'.includes('${char}')) // ${isVowel ? 'VOWEL' : 'CONSONANT'}`,
+            scopeName: `Char [${idx}] = '${char}'`,
+            variables: { index: idx, char, isVowel, vowelCount },
+            condition: `'${char}' is vowel`,
+            conditionMet: isVowel,
+            callStack: ['main()', 'countVowels()'],
+            arrayState: [...chars],
+            activeIndices: [idx],
+            output: isVowel ? `Found Vowel '${char}' -> Count = ${vowelCount}` : undefined,
+            explanation: isVowel
+              ? `Character '${char}' is a vowel! Incremented vowelCount to ${vowelCount}.`
+              : `Character '${char}' is a consonant. Moving to next character.`,
+          });
+        });
+
+        resultOutput = String(vowelCount);
+      }
+      // -------------------------------------------------------------
+      // Pattern 5: FizzBuzz Algorithm (fizzBuzz)
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('fizz')) {
+        const n = 15;
+        const results: string[] = [];
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const n = ${n}; const results = [];`,
+          scopeName: 'FizzBuzz Scope',
+          variables: { n },
+          condition: 'Initialize FizzBuzz Range (1..15)',
+          conditionMet: true,
+          callStack: ['main()', 'fizzBuzz()'],
+          explanation: `FizzBuzz: Evaluating numbers 1 to ${n}. Divisible by 3 -> 'Fizz', by 5 -> 'Buzz', by both -> 'FizzBuzz'.`,
+        });
+
+        for (let i = 1; i <= n; i++) {
+          let val = '';
+          if (i % 15 === 0) val = 'FizzBuzz';
+          else if (i % 3 === 0) val = 'Fizz';
+          else if (i % 5 === 0) val = 'Buzz';
+          else val = String(i);
+
+          results.push(val);
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `i = ${i} -> ${val}`,
+            scopeName: `Iteration i=${i}`,
+            variables: { i, 'i % 3': i % 3, 'i % 5': i % 5, output: val },
+            condition: `Evaluate FizzBuzz for ${i}`,
+            conditionMet: true,
+            callStack: ['main()', 'fizzBuzz()'],
+            arrayState: [...results],
+            activeIndices: [results.length - 1],
+            output: `Step ${i}: ${val}`,
+            explanation: `Number ${i}: Evaluated -> '${val}'. Added '${val}' to results array.`,
+          });
+        }
+
+        resultOutput = JSON.stringify(results);
+      }
+      // -------------------------------------------------------------
+      // Pattern 6: Two Sum (Hash Map / Object Lookup)
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('twosum') || (lowerCode.includes('map') && lowerCode.includes('target'))) {
         const nums = [2, 7, 11, 15];
         const target = 9;
         const map: Record<number, number> = {};
@@ -100,7 +330,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         resultOutput = JSON.stringify(resultIndices);
       }
       // -------------------------------------------------------------
-      // Pattern 2: Palindrome String Checker
+      // Pattern 7: Palindrome String Checker
       // -------------------------------------------------------------
       else if (lowerCode.includes('palindrome') || (lowerCode.includes('charat') && lowerCode.includes('length'))) {
         const str = 'racecar';
@@ -153,7 +383,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         resultOutput = isPal ? 'true (Valid Palindrome)' : 'false (Not Palindrome)';
       }
       // -------------------------------------------------------------
-      // Pattern 3: Fibonacci Iterative Generator
+      // Pattern 8: Fibonacci Iterative Generator
       // -------------------------------------------------------------
       else if (lowerCode.includes('fib') || (lowerCode.includes('fibonacci') && lowerCode.includes('push'))) {
         const n = 7;
@@ -193,7 +423,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         resultOutput = JSON.stringify(fib);
       }
       // -------------------------------------------------------------
-      // Pattern 4: Bubble Sort / Array Sorting Logic
+      // Pattern 9: Bubble Sort / Array Sorting Logic
       // -------------------------------------------------------------
       else if (lowerCode.includes('bubble') || (lowerCode.includes('swap') && lowerCode.includes('for'))) {
         const initialArr = [5, 2, 8, 1, 4];
@@ -252,194 +482,9 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         }
 
         resultOutput = JSON.stringify(arr);
-        traceSteps.push({
-          stepNumber: traceSteps.length + 1,
-          line: `return arr; // Sorted: [${arr.join(', ')}]`,
-          scopeName: 'BubbleSort Return',
-          variables: { sortedArray: JSON.stringify(arr) },
-          condition: 'Sorting Completed',
-          conditionMet: true,
-          callStack: ['main()'],
-          arrayState: [...arr],
-          output: `Sorted Array Result: [${arr.join(', ')}]`,
-          explanation: `Bubble Sort finished! All elements are now sorted in ascending order: [${arr.join(', ')}].`,
-        });
       }
       // -------------------------------------------------------------
-      // Pattern 5: Binary Search Logic
-      // -------------------------------------------------------------
-      else if (lowerCode.includes('binary') || (lowerCode.includes('mid') && lowerCode.includes('low'))) {
-        const arr = [1, 3, 5, 7, 9, 11, 13, 15];
-        const target = 11;
-        let low = 0;
-        let high = arr.length - 1;
-        let foundIndex = -1;
-
-        traceSteps.push({
-          stepNumber: 1,
-          line: `const arr = [${arr.join(', ')}]; target = ${target};`,
-          scopeName: 'BinarySearch Scope',
-          variables: { target, low: 0, high: arr.length - 1 },
-          condition: 'Initialize Binary Search Bounds',
-          conditionMet: true,
-          callStack: ['main()', 'binarySearch()'],
-          arrayState: [...arr],
-          explanation: `Binary Search: Looking for target value ${target} in sorted array [${arr.join(', ')}].`,
-        });
-
-        while (low <= high) {
-          const mid = Math.floor((low + high) / 2);
-          const midVal = arr[mid];
-
-          if (midVal === target) {
-            foundIndex = mid;
-            traceSteps.push({
-              stepNumber: traceSteps.length + 1,
-              line: `if (arr[mid] === target) // ${midVal} === ${target}`,
-              scopeName: `Search Range [${low}..${high}]`,
-              variables: { low, high, mid, 'arr[mid]': midVal, target },
-              condition: `${midVal} === ${target}`,
-              conditionMet: true,
-              callStack: ['main()', 'binarySearch()'],
-              arrayState: [...arr],
-              activeIndices: [mid],
-              output: `Found target ${target} at index ${mid}!`,
-              explanation: `Calculated mid index ${mid} (value ${midVal}). Target ${target} MATCHED at index ${mid}!`,
-            });
-            break;
-          } else if (midVal < target) {
-            traceSteps.push({
-              stepNumber: traceSteps.length + 1,
-              line: `low = mid + 1; // ${midVal} < ${target}`,
-              scopeName: `Search Range [${low}..${high}]`,
-              variables: { low, high, mid, 'arr[mid]': midVal, target },
-              condition: `${midVal} < ${target}`,
-              conditionMet: true,
-              callStack: ['main()', 'binarySearch()'],
-              arrayState: [...arr],
-              activeIndices: [mid],
-              explanation: `mid value ${midVal} < target ${target}. Target lies in right half. Updating low pointer from ${low} to ${mid + 1}.`,
-            });
-            low = mid + 1;
-          } else {
-            traceSteps.push({
-              stepNumber: traceSteps.length + 1,
-              line: `high = mid - 1; // ${midVal} > ${target}`,
-              scopeName: `Search Range [${low}..${high}]`,
-              variables: { low, high, mid, 'arr[mid]': midVal, target },
-              condition: `${midVal} > ${target}`,
-              conditionMet: true,
-              callStack: ['main()', 'binarySearch()'],
-              arrayState: [...arr],
-              activeIndices: [mid],
-              explanation: `mid value ${midVal} > target ${target}. Target lies in left half. Updating high pointer from ${high} to ${mid - 1}.`,
-            });
-            high = mid - 1;
-          }
-        }
-
-        resultOutput = `Index ${foundIndex}`;
-      }
-      // -------------------------------------------------------------
-      // Pattern 6: Two-Pointer Reverse / Swap Logic
-      // -------------------------------------------------------------
-      else if (lowerCode.includes('reverse') || (lowerCode.includes('left') && lowerCode.includes('right'))) {
-        let arr = [1, 2, 3, 4, 5];
-        let left = 0;
-        let right = arr.length - 1;
-
-        traceSteps.push({
-          stepNumber: 1,
-          line: `let arr = [${arr.join(', ')}]; left = 0, right = ${right}`,
-          scopeName: 'TwoPointer Scope',
-          variables: { left, right, array: JSON.stringify(arr) },
-          condition: 'Initialize Two Pointers',
-          conditionMet: true,
-          callStack: ['main()', 'twoPointer()'],
-          arrayState: [...arr],
-          explanation: `Two-Pointer: Reversing array [${arr.join(', ')}] by swapping elements from opposite ends.`,
-        });
-
-        while (left < right) {
-          const lVal = arr[left];
-          const rVal = arr[right];
-          [arr[left], arr[right]] = [arr[right], arr[left]];
-
-          traceSteps.push({
-            stepNumber: traceSteps.length + 1,
-            line: `Swap(arr[${left}], arr[${right}]) // ${lVal} <-> ${rVal}`,
-            scopeName: `Pointers: Left=${left}, Right=${right}`,
-            variables: { left, right, 'arr[left]': rVal, 'arr[right]': lVal },
-            condition: `${left} < ${right}`,
-            conditionMet: true,
-            callStack: ['main()', 'twoPointer()'],
-            arrayState: [...arr],
-            activeIndices: [left, right],
-            swapIndices: [left, right],
-            output: `Swapped index ${left} (${lVal}) with index ${right} (${rVal})`,
-            explanation: `Swapped left element (${lVal}) with right element (${rVal}). Moving pointers: left++ (${left + 1}), right-- (${right - 1}).`,
-          });
-
-          left++;
-          right--;
-        }
-
-        resultOutput = JSON.stringify(arr);
-      }
-      // -------------------------------------------------------------
-      // Pattern 7: Factorial / Recursive Call Stack Logic
-      // -------------------------------------------------------------
-      else if (lowerCode.includes('factorial') || lowerCode.includes('rec')) {
-        function factTrace(n: number): number {
-          if (n <= 1) {
-            traceSteps.push({
-              stepNumber: traceSteps.length + 1,
-              line: `if (n <= 1) return 1; // n = ${n}`,
-              scopeName: `factorial(${n}) [Base Case]`,
-              variables: { n, returnVal: 1 },
-              condition: `${n} <= 1`,
-              conditionMet: true,
-              callStack: ['main()', ...Array.from({ length: 5 - n }, (_, idx) => `factorial(${5 - idx})`)],
-              output: `Base case hit: factorial(${n}) = 1`,
-              explanation: `Base Case Reached: n = ${n}. Returning 1 up the recursive call stack.`,
-            });
-            return 1;
-          }
-
-          traceSteps.push({
-            stepNumber: traceSteps.length + 1,
-            line: `return n * factorial(n - 1); // n = ${n}`,
-            scopeName: `factorial(${n}) [Recursive Call]`,
-            variables: { n, next: n - 1 },
-            condition: `${n} > 1`,
-            conditionMet: true,
-            callStack: ['main()', ...Array.from({ length: 6 - n }, (_, idx) => `factorial(${5 - idx})`)],
-            explanation: `Recursive Step: Evaluating ${n} * factorial(${n - 1}). Pushing new frame to call stack.`,
-          });
-
-          const sub = factTrace(n - 1);
-          const res = n * sub;
-
-          traceSteps.push({
-            stepNumber: traceSteps.length + 1,
-            line: `return ${n} * ${sub} = ${res};`,
-            scopeName: `factorial(${n}) [Unwinding Stack]`,
-            variables: { n, subFactorial: sub, total: res },
-            condition: 'Stack Frame Unwound',
-            conditionMet: true,
-            callStack: ['main()', ...Array.from({ length: 5 - n }, (_, idx) => `factorial(${5 - idx})`)],
-            output: `factorial(${n}) = ${res}`,
-            explanation: `Unwinding Stack: Received sub-result ${sub}. Computed ${n} * ${sub} = ${res}.`,
-          });
-
-          return res;
-        }
-
-        const factResult = factTrace(5);
-        resultOutput = String(factResult);
-      }
-      // -------------------------------------------------------------
-      // Pattern 8: Default LeetCode / Odd-Even Count Logic
+      // Pattern 10: Default LeetCode / Odd-Even Count Logic
       // -------------------------------------------------------------
       else {
         const arr = [2, 3, 4, 5, 6];
@@ -551,7 +596,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
                   STEP {currentStepIndex + 1} / {steps.length}
                 </span>
               </h2>
-              <p className="text-[11px] text-text-subtle">Visual step-by-step sorting, two-sum map, binary search, recursion & memory stepper</p>
+              <p className="text-[11px] text-text-subtle">Visual step-by-step sum, max/min, prime check, vowel count, fizzbuzz & memory stepper</p>
             </div>
           </div>
 
