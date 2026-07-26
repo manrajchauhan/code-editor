@@ -1,7 +1,7 @@
 # Engineering Memory
 
 ## Current Phase
-- **Full Filesystem CRUD & Integrated Interactive Terminal** (COMPLETED)
+- **Explorer Context Menu, Live Cursor Position Indicator & Status Bar Refinements** (COMPLETED)
 
 ---
 
@@ -13,32 +13,26 @@
 - Completed Phase 3 Editor UX & Search (Command Palette, Settings, Global Search).
 - Completed Phase 4 Developer Tooling & Layout Refinements (Panel resizer, Diagnostics drawer).
 - Added Real-time System Running Status Monitor (`SystemStatusModal.tsx` & RAM heap indicator pill).
-- Added Full Filesystem CRUD Operations:
-  - 📄 Create File (`createFileItem` / `create_file_node`)
-  - 📁 Create Folder (`createDirItem` / `create_dir_node`)
-  - 📖 Read File/Directory (`readDirectoryTree` / `readFileText`)
-  - ✏️ Inline Rename (`renameFileSystemItem` / `rename_node` / `F2`)
-  - 📋 Duplicate / Copy (`copyFileSystemItem` / `copy_node`)
-  - 🗑️ Delete Item (`deleteFileSystemItem` / `delete_node`)
-- Added Full Integrated Terminal:
-  - Built with `@xterm/xterm` and `@xterm/addon-fit`.
-  - Dark mode styled prompt matching editor design system.
-  - Interactive shell environment supporting commands (`ls`, `pwd`, `mkdir`, `touch`, `cat`, `rm`, `clear`, `node`, `help`).
-  - Integrated into bottom drawer panel alongside **Terminal**, **Problems**, and **Output** tabs (`⌘T` / `Ctrl+~`).
-- Validated build & type safety (`npm run build` completed in 999ms with 0 errors).
-- Pushed commit `54ca6cc` to GitHub `https://github.com/manrajchauhan/code-editor.git` (main).
+- Added Full Filesystem CRUD Operations (Create, Read, Update, Rename, Duplicate, Delete).
+- Added Full Integrated Terminal (`@xterm/xterm` & `@xterm/addon-fit` canvas drawer).
+- Added Right-Click Context Menu for File Explorer Tree (`FileTreeContextMenu.tsx`):
+  - Actions: New File, New Folder, Rename (`F2`), Duplicate, Copy Path, Delete.
+- Added Live Cursor Position Indicator (`Ln X, Col Y`):
+  - Listens to Monaco `onDidChangeCursorPosition` events and updates status bar coordinates in real time.
+- Validated build & type safety (`npm run build` completed in 1.86s with 0 errors).
+- Pushed commit `77bbd00` to GitHub `https://github.com/manrajchauhan/code-editor.git` (main).
 
 ---
 
 ## Current Work
-- All core desktop code editor features, filesystem CRUD operations, interactive terminal, UX tools, and documentation are complete and published.
+- All non-AI core desktop code editor features, filesystem CRUD operations, interactive terminal, context menus, cursor indicators, UX tools, and documentation are complete and published.
 
 ---
 
 ## Architecture Decisions
 - **Full FS Native IPC**: Tauri Rust handlers in `src-tauri/src/commands/fs.rs` with web dev fallback in `fileSystemService.ts`.
-- **Canvas Terminal**: `@xterm/xterm` canvas rendering with automatic `@xterm/addon-fit` sizing on drawer toggle and window resize.
-- **Unified Drawer State**: Bottom drawer manages Terminal, Problems, and Output tabs via `terminalStore` and `diagnosticsStore`.
+- **Canvas Terminal**: `@xterm/xterm` canvas rendering with automatic `@xterm/addon-fit` sizing.
+- **Monaco Cursor Event Stream**: Efficient position listener bound to Zustand `editorStore`.
 
 ---
 
