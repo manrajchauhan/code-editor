@@ -1,16 +1,31 @@
 import { create } from 'zustand';
 
+export interface ExecutionBenchmark {
+  codeSnippet: string;
+  command: string;
+  durationMs: number;
+  ipcSpawnMs: number;
+  v8BootMs: number;
+  execStreamMs: number;
+  canvasRenderMs: number;
+  timestamp: number;
+}
+
 export interface TerminalState {
   isTerminalOpen: boolean;
   activeDrawerTab: 'terminal' | 'problems' | 'output';
   cwd: string;
   pendingRunCommand: string | null;
+  lastExecutionBenchmark: ExecutionBenchmark | null;
+  isBenchmarkModalOpen: boolean;
   toggleTerminal: () => void;
   setTerminalOpen: (open: boolean) => void;
   setActiveDrawerTab: (tab: 'terminal' | 'problems' | 'output') => void;
   setCwd: (path: string) => void;
   runCodeFile: (command: string) => void;
   clearPendingRunCommand: () => void;
+  setLastExecutionBenchmark: (benchmark: ExecutionBenchmark) => void;
+  closeBenchmarkModal: () => void;
 }
 
 export const useTerminalStore = create<TerminalState>((set) => ({
@@ -18,6 +33,8 @@ export const useTerminalStore = create<TerminalState>((set) => ({
   activeDrawerTab: 'terminal',
   cwd: '/my-project',
   pendingRunCommand: null,
+  lastExecutionBenchmark: null,
+  isBenchmarkModalOpen: false,
 
   toggleTerminal: () =>
     set((state) => ({
@@ -37,4 +54,12 @@ export const useTerminalStore = create<TerminalState>((set) => ({
     }),
 
   clearPendingRunCommand: () => set({ pendingRunCommand: null }),
+
+  setLastExecutionBenchmark: (benchmark) =>
+    set({
+      lastExecutionBenchmark: benchmark,
+      isBenchmarkModalOpen: true,
+    }),
+
+  closeBenchmarkModal: () => set({ isBenchmarkModalOpen: false }),
 }));
