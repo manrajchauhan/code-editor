@@ -5,7 +5,6 @@ import { useSettingsStore } from '../settings/stores/settingsStore';
 import { useCommandStore } from '../command-palette/stores/commandStore';
 import { useTerminalStore } from '../terminal/stores/terminalStore';
 import { useSystemMetrics } from '../system-status/hooks/useSystemMetrics';
-import { useFpsMonitor } from '../../hooks/useFpsMonitor';
 import { SystemStatusModal } from '../system-status/components/SystemStatusModal';
 import { PerformanceModal } from '../../components/ui/PerformanceModal';
 
@@ -15,7 +14,6 @@ export const StatusBar: React.FC = () => {
   const { openCommandPalette } = useCommandStore();
   const { toggleTerminal, isTerminalOpen } = useTerminalStore();
   const metrics = useSystemMetrics();
-  const { fps, frameTimeMs } = useFpsMonitor();
 
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isPerfModalOpen, setIsPerfModalOpen] = useState(false);
@@ -47,15 +45,15 @@ export const StatusBar: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Live FPS & Render Latency Performance Button */}
+          {/* Performance Benchmark Button */}
           <button
             type="button"
             onClick={() => setIsPerfModalOpen(true)}
             className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors font-mono text-[10px]"
-            title="Click to view Performance & Animation Profiler"
+            title="Click to view Code Execution Performance Benchmark"
           >
             <Zap className="w-3 h-3 text-emerald-400" />
-            <span>{fps} FPS ({frameTimeMs}ms)</span>
+            <span>Benchmark</span>
           </button>
 
           <button
