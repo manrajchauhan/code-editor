@@ -36,22 +36,51 @@ pub async fn execute_shell_command(command: String, cwd: String) -> Result<Strin
     let current_path = std::env::var("PATH").unwrap_or_default();
     let full_path = format!("{}/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:{}", home, current_path);
 
-    let output = std::process::Command::new("sh")
-        .arg("-c")
-        .arg(&command)
-        .env("PATH", full_path)
-        .current_dir(Path::new(&active_dir))
-        .output()
-        .map_err(|e| format!("Failed to execute shell command: {}", e))?;
+    let lower_cmd = command.to_lower_case();
+    let is_daemon = lower_cmd.contains("dev") || lower_cmd.contains("start") || lower_cmd.contains("serve");
 
-    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    if is_daemon {
+        let mut child = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&command)
+            .env("PATH", &full_path)
+            .current_dir(Path::new(&active_dir))
+            .spawn()
+            .map_err(|e| format!("Failed to spawn dev process: {}", e))?;
 
-    let combined = format!("{}{}", stdout, stderr);
-    if combined.trim().is_empty() {
-        Ok("Done.\r\n".to_string())
+        // Give process a brief moment to boot up
+        std::thread::sleep(std::time::Duration::from_millis(600));
+
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                Ok(format!("Process exited with status: {}\r\n", status))
+            }
+            Ok(None) => {
+                Ok(format!(
+                    "\x1b[32m🚀 Started development server process:\x1b[0m {}\r\n\x1b[36m  ➜ Local: http://localhost:1420/\x1b[0m\r\n\x1b[90mRunning continuously in background...\x1b[0m\r\n",
+                    command
+                ))
+            }
+            Err(e) => Err(format!("Error checking process status: {}", e)),
+        }
     } else {
-        Ok(combined)
+        let output = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&command)
+            .env("PATH", full_path)
+            .current_dir(Path::new(&active_dir))
+            .output()
+            .map_err(|e| format!("Failed to execute shell command: {}", e))?;
+
+        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+
+        let combined = format!("{}{}", stdout, stderr);
+        if combined.trim().is_empty() {
+            Ok("Done.\r\n".to_string())
+        } else {
+            Ok(combined)
+        }
     }
 }
 
