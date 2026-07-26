@@ -11,7 +11,7 @@ export interface SaveFileResult {
  */
 export async function saveFile(filePath: string | undefined, content: string): Promise<SaveFileResult> {
   if (!filePath) {
-    return { success: true, message: 'Saved to local memory (Untitled)' };
+    return { success: false, message: 'No file path specified' };
   }
 
   try {

@@ -48,7 +48,6 @@ pub async fn execute_shell_command(command: String, cwd: String) -> Result<Strin
             .spawn()
             .map_err(|e| format!("Failed to spawn dev process: {}", e))?;
 
-        // Give process a brief moment to boot up
         std::thread::sleep(std::time::Duration::from_millis(600));
 
         match child.try_wait() {
@@ -146,11 +145,23 @@ pub async fn read_file_content(path: String) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn write_file_content(path: String, content: String) -> Result<(), String> {
-    fs::write(&path, content).map_err(|e| format!("Failed to write file: {}", e))
+    let p = Path::new(&path);
+    if let Some(parent) = p.parent() {
+        if !parent.exists() {
+            let _ = fs::create_dir_all(parent);
+        }
+    }
+    fs::write(&path, content).map_err(|e| format!("Failed to write file to {}: {}", path, e))
 }
 
 #[tauri::command]
 pub async fn create_file_node(path: String) -> Result<(), String> {
+    let p = Path::new(&path);
+    if let Some(parent) = p.parent() {
+        if !parent.exists() {
+            let _ = fs::create_dir_all(parent);
+        }
+    }
     fs::File::create(&path).map_err(|e| format!("Failed to create file: {}", e))?;
     Ok(())
 }
