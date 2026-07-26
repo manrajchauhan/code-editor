@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import { Play, Package, TestTube, Trash2, Code2 } from 'lucide-react';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { useTerminalStore } from '../stores/terminalStore';
 import { executeShellCommand } from '../../../services/fileSystemService';
@@ -189,69 +188,7 @@ export const TerminalPanel: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-[#0d0e11] p-2 overflow-hidden flex flex-col gap-1.5">
-      {/* Terminal Toolbar Quick Actions */}
-      <div className="flex items-center justify-between px-2 py-1 bg-bg-surface border-b border-border-subtle text-[11px] text-text-subtle shrink-0">
-        <div className="flex items-center gap-1.5">
-          <span className="font-semibold text-text-main">Code Runners:</span>
-          <button
-            type="button"
-            onClick={() => executeQuickAction('node --version')}
-            className="flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors"
-          >
-            <Code2 className="w-3 h-3" />
-            <span>Node JS</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => executeQuickAction('python3 --version')}
-            className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
-          >
-            <Code2 className="w-3 h-3" />
-            <span>Python3</span>
-          </button>
-
-          <span className="text-border-subtle mx-1">|</span>
-
-          <button
-            type="button"
-            onClick={() => executeQuickAction('npm run dev')}
-            className="flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
-          >
-            <Play className="w-3 h-3" />
-            <span>npm run dev</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => executeQuickAction('npm install')}
-            className="flex items-center gap-1 px-2 py-0.5 rounded bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors"
-          >
-            <Package className="w-3 h-3" />
-            <span>npm install</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => executeQuickAction('npm test')}
-            className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
-          >
-            <TestTube className="w-3 h-3" />
-            <span>npm test</span>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (xtermRef.current) xtermRef.current.clear();
-          }}
-          className="flex items-center gap-1 px-2 py-0.5 rounded hover:bg-bg-hover text-text-subtle hover:text-text-main transition-colors"
-          title="Clear Terminal Screen"
-        >
-          <Trash2 className="w-3 h-3" />
-          <span>Clear</span>
-        </button>
-      </div>
-
+    <div className="w-full h-full bg-[#0d0e11] p-2 overflow-hidden flex flex-col">
       <div ref={terminalRef} className="w-full flex-1 overflow-hidden" />
     </div>
   );

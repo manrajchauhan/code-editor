@@ -11,7 +11,7 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
       <button
         type="button"
         onClick={onOpenDevModal}
-        className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent/15 border border-accent/30 hover:bg-accent/25 text-accent transition-colors cursor-pointer text-[11px] font-medium shadow-sm"
+        className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-accent transition-colors cursor-pointer text-[11px] font-medium shadow-sm"
         title="Click to view developer info"
       >
         <Sparkles className="w-3 h-3 text-accent animate-pulse" />
