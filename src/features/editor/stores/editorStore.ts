@@ -137,6 +137,25 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }));
   },
 
+  renameTab: (oldPath, newPath, newName) => {
+    set((state) => ({
+      tabs: state.tabs.map((tab) => {
+        if (tab.filePath === oldPath || tab.id === oldPath) {
+          return {
+            ...tab,
+            id: newPath,
+            filePath: newPath,
+            fileName: newName,
+            language: detectLanguage(newName),
+          };
+        }
+        return tab;
+      }),
+      activeTabId: state.activeTabId === oldPath ? newPath : state.activeTabId,
+      secondaryTabId: state.secondaryTabId === oldPath ? newPath : state.secondaryTabId,
+    }));
+  },
+
   newUntitledTab: () => {
     const fileName = `Untitled-${untitledCounter++}.ts`;
     get().openTab({

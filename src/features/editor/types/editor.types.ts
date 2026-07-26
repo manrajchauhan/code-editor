@@ -33,6 +33,7 @@ export interface EditorState {
   toggleSplitView: () => void;
   updateTabContent: (id: string, newContent: string) => void;
   markTabSaved: (id: string) => void;
+  renameTab: (oldPath: string, newPath: string, newName: string) => void;
   newUntitledTab: () => void;
   setCursorPosition: (line: number, column: number) => void;
   getActiveTab: () => EditorTab | undefined;

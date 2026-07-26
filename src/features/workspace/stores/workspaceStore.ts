@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { WorkspaceState, FileNode } from '../types/workspace.types';
+import { useEditorStore } from '../../editor/stores/editorStore';
 import {
   openFolderDialog,
   readDirectoryTree,
@@ -102,7 +103,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   renameItem: async (oldPath: string, newName: string) => {
+    const pathParts = oldPath.split('/');
+    pathParts.pop();
+    const newPath = [...pathParts, newName].join('/');
+
     await renameFileSystemItem(oldPath, newName);
+    useEditorStore.getState().renameTab(oldPath, newPath, newName);
     await get().refreshWorkspace();
   },
 
