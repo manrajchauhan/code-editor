@@ -4,8 +4,6 @@ import {
   ChevronDown,
   Folder,
   FolderOpen,
-  FileCode,
-  FileText,
   Trash2,
   Edit2,
   Copy,
@@ -16,6 +14,7 @@ import { useEditorStore } from '../../editor/stores/editorStore';
 import { detectLanguage } from '../../editor/utils/languageDetector';
 import { readFileText } from '../../../services/fileSystemService';
 import { FileTreeContextMenu } from './FileTreeContextMenu';
+import { FileIcon } from '../../../components/ui/FileIcon';
 
 interface FileTreeItemProps {
   node: FileNode;
@@ -70,18 +69,6 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
     setIsRenaming(false);
   };
 
-  const handleDuplicate = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    await duplicateItem(node.path);
-  };
-
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm(`Delete ${node.name}?`)) {
-      await deleteItem(node.path);
-    }
-  };
-
   const renderIcon = () => {
     if (isDirectoryNode) {
       return node.isExpanded ? (
@@ -90,12 +77,7 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
         <Folder className="w-4 h-4 text-amber-400 shrink-0" />
       );
     }
-
-    const ext = node.name.split('.').pop()?.toLowerCase();
-    if (ext === 'ts' || ext === 'tsx' || ext === 'js' || ext === 'jsx') {
-      return <FileCode className="w-4 h-4 text-indigo-400 shrink-0" />;
-    }
-    return <FileText className="w-4 h-4 text-text-subtle shrink-0" />;
+    return <FileIcon fileName={node.name} className="w-4 h-4 shrink-0" />;
   };
 
   return (
@@ -138,17 +120,14 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
         >
           <div className="flex items-center gap-1.5 truncate">
             {isDirectoryNode ? (
-              <span className="text-text-subtle hover:text-text-main shrink-0">
-                {node.isExpanded ? (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5" />
-                )}
-              </span>
+              node.isExpanded ? (
+                <ChevronDown className="w-3.5 h-3.5 text-text-subtle shrink-0" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-text-subtle shrink-0" />
+              )
             ) : (
-              <span className="w-3.5 h-3.5 shrink-0" />
+              <span className="w-3.5 shrink-0" />
             )}
-
             {renderIcon()}
             <span className="truncate">{node.name}</span>
           </div>
@@ -167,17 +146,23 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
             </button>
             <button
               type="button"
-              onClick={handleDuplicate}
+              onClick={(e) => {
+                e.stopPropagation();
+                duplicateItem(node.path);
+              }}
               className="p-0.5 rounded hover:bg-bg-active text-text-subtle hover:text-text-main"
-              title="Duplicate Item"
+              title="Duplicate"
             >
               <Copy className="w-3 h-3" />
             </button>
             <button
               type="button"
-              onClick={handleDelete}
-              className="p-0.5 rounded hover:bg-red-500/20 hover:text-red-400 text-text-subtle"
-              title={`Delete ${node.name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteItem(node.path);
+              }}
+              className="p-0.5 rounded hover:bg-bg-active text-text-subtle hover:text-red-400"
+              title="Delete"
             >
               <Trash2 className="w-3 h-3" />
             </button>

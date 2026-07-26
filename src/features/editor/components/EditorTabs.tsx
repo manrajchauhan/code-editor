@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { FileCode, X, Plus, Edit2 } from 'lucide-react';
+import { X, Plus, Edit2 } from 'lucide-react';
 import { useEditorStore } from '../stores/editorStore';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { createFileItem } from '../../../services/fileSystemService';
+import { FileIcon } from '../../../components/ui/FileIcon';
 
 export const EditorTabs: React.FC = () => {
   const { tabs, activeTabId, setActiveTab, closeTab, newUntitledTab, renameTab } = useEditorStore();
@@ -80,7 +81,7 @@ export const EditorTabs: React.FC = () => {
               ) : (
                 <>
                   <div className="flex items-center gap-1.5 truncate">
-                    <FileCode className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-accent' : 'text-text-subtle'}`} />
+                    <FileIcon fileName={tab.fileName} className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">{tab.fileName}</span>
                   </div>
 
