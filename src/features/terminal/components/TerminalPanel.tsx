@@ -13,6 +13,9 @@ export const TerminalPanel: React.FC = () => {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const inputBufferRef = useRef<string>('');
 
+  const historyRef = useRef<string[]>([]);
+  const historyIndexRef = useRef<number>(-1);
+
   const { currentFolderPath, currentFolderName, refreshWorkspace } = useWorkspaceStore();
   const { pendingRunCommand, clearPendingRunCommand } = useTerminalStore();
 
@@ -55,10 +58,53 @@ export const TerminalPanel: React.FC = () => {
     };
 
     term.writeln('\x1b[1;38;2;99;102;241mIntegrated Terminal & Process Shell v1.0.0\x1b[0m');
-    term.writeln('\x1b[38;2;156;163;175mRun Node (.js), TS (.ts), Python (.py), Rust (.rs), Shell (.sh) with "Run Code".\x1b[0m');
+    term.writeln('\x1b[38;2;156;163;175mPress ↑ Up / ↓ Down Arrow keys for command history.\x1b[0m');
     prompt();
 
     term.onData(async (data) => {
+      // 1. Up Arrow Key: Navigate to previous command in history
+      if (data === '\x1b[A') {
+        if (historyRef.current.length > 0) {
+          if (historyIndexRef.current === -1) {
+            historyIndexRef.current = historyRef.current.length - 1;
+          } else if (historyIndexRef.current > 0) {
+            historyIndexRef.current--;
+          }
+          const prevCmd = historyRef.current[historyIndexRef.current] || '';
+          while (inputBufferRef.current.length > 0) {
+            inputBufferRef.current = inputBufferRef.current.slice(0, -1);
+            term.write('\b \b');
+          }
+          inputBufferRef.current = prevCmd;
+          term.write(prevCmd);
+        }
+        return;
+      }
+
+      // 2. Down Arrow Key: Navigate to next command in history
+      if (data === '\x1b[B') {
+        if (historyRef.current.length > 0 && historyIndexRef.current !== -1) {
+          if (historyIndexRef.current < historyRef.current.length - 1) {
+            historyIndexRef.current++;
+            const nextCmd = historyRef.current[historyIndexRef.current];
+            while (inputBufferRef.current.length > 0) {
+              inputBufferRef.current = inputBufferRef.current.slice(0, -1);
+              term.write('\b \b');
+            }
+            inputBufferRef.current = nextCmd;
+            term.write(nextCmd);
+          } else {
+            historyIndexRef.current = historyRef.current.length;
+            while (inputBufferRef.current.length > 0) {
+              inputBufferRef.current = inputBufferRef.current.slice(0, -1);
+              term.write('\b \b');
+            }
+            inputBufferRef.current = '';
+          }
+        }
+        return;
+      }
+
       const code = data.charCodeAt(0);
 
       if (code === 13) {
@@ -67,6 +113,10 @@ export const TerminalPanel: React.FC = () => {
         inputBufferRef.current = '';
 
         if (line.length > 0) {
+          // Push into command history
+          historyRef.current.push(line);
+          historyIndexRef.current = historyRef.current.length;
+
           term.write('\r\n');
           await runCommand(line, term);
         } else {
@@ -130,6 +180,10 @@ export const TerminalPanel: React.FC = () => {
   const executeQuickAction = async (cmd: string) => {
     if (!xtermRef.current) return;
     const term = xtermRef.current;
+
+    historyRef.current.push(cmd);
+    historyIndexRef.current = historyRef.current.length;
+
     term.write(`\r\n\x1b[38;2;99;102;241m${currentFolderName || 'code-editor'}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m ${cmd}\r\n`);
     await runCommand(cmd, term);
   };
