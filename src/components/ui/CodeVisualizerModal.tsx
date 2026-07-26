@@ -40,9 +40,162 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
       const lowerCode = code.toLowerCase();
 
       // -------------------------------------------------------------
-      // Pattern 1: Bubble Sort / Array Sorting Logic
+      // Pattern 1: Two Sum (Hash Map / Object Lookup)
       // -------------------------------------------------------------
-      if (lowerCode.includes('bubble') || (lowerCode.includes('swap') && lowerCode.includes('for'))) {
+      if (lowerCode.includes('twosum') || (lowerCode.includes('map') && lowerCode.includes('target'))) {
+        const nums = [2, 7, 11, 15];
+        const target = 9;
+        const map: Record<number, number> = {};
+        let resultIndices: [number, number] | null = null;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const nums = [${nums.join(', ')}]; target = ${target}; const map = {};`,
+          scopeName: 'TwoSum Scope',
+          variables: { target, nums: JSON.stringify(nums), map: '{}' },
+          condition: 'Initialize Hash Map Lookup',
+          conditionMet: true,
+          callStack: ['main()', 'twoSum()'],
+          arrayState: [...nums],
+          explanation: `Two Sum: Finding 2 indices in [${nums.join(', ')}] that sum to target ${target} using a Hash Map.`,
+        });
+
+        for (let i = 0; i < nums.length; i++) {
+          const num = nums[i];
+          const complement = target - num;
+
+          if (map[complement] !== undefined) {
+            resultIndices = [map[complement], i];
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `if (map[${complement}] !== undefined) // Found ${complement} at index ${map[complement]}!`,
+              scopeName: `Iteration i=${i} (val=${num})`,
+              variables: { i, num, complement, map: JSON.stringify(map), result: JSON.stringify(resultIndices) },
+              condition: `map[${complement}] exists (${map[complement]})`,
+              conditionMet: true,
+              callStack: ['main()', 'twoSum()'],
+              arrayState: [...nums],
+              activeIndices: [map[complement], i],
+              output: `Found pair! nums[${map[complement]}] (${complement}) + nums[${i}] (${num}) = ${target}`,
+              explanation: `Complement ${target} - ${num} = ${complement} FOUND in Hash Map at index ${map[complement]}! Solution: [${map[complement]}, ${i}].`,
+            });
+            break;
+          } else {
+            map[num] = i;
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `map[${num}] = ${i}; // Stored value ${num} -> index ${i}`,
+              scopeName: `Iteration i=${i} (val=${num})`,
+              variables: { i, num, complement, map: JSON.stringify(map) },
+              condition: `map[${complement}] exists`,
+              conditionMet: false,
+              callStack: ['main()', 'twoSum()'],
+              arrayState: [...nums],
+              activeIndices: [i],
+              explanation: `Complement ${complement} not in map. Stored key ${num} with index ${i} in map: ${JSON.stringify(map)}.`,
+            });
+          }
+        }
+
+        resultOutput = JSON.stringify(resultIndices);
+      }
+      // -------------------------------------------------------------
+      // Pattern 2: Palindrome String Checker
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('palindrome') || (lowerCode.includes('charat') && lowerCode.includes('length'))) {
+        const str = 'racecar';
+        const chars = str.split('');
+        let isPal = true;
+        let left = 0;
+        let right = chars.length - 1;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const str = "${str}"; left = 0, right = ${right}`,
+          scopeName: 'Palindrome Scope',
+          variables: { string: str, left: 0, right },
+          condition: 'Initialize String Pointers',
+          conditionMet: true,
+          callStack: ['main()', 'isPalindrome()'],
+          arrayState: [...chars],
+          explanation: `Palindrome Checker: Checking if string "${str}" reads the same forwards and backwards.`,
+        });
+
+        while (left < right) {
+          const charL = chars[left];
+          const charR = chars[right];
+          const matches = charL === charR;
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `if (str[${left}] === str[${right}]) // '${charL}' === '${charR}'`,
+            scopeName: `Comparing Pointers [${left}] & [${right}]`,
+            variables: { left, right, 'str[left]': charL, 'str[right]': charR, matches },
+            condition: `'${charL}' === '${charR}'`,
+            conditionMet: matches,
+            callStack: ['main()', 'isPalindrome()'],
+            arrayState: [...chars],
+            activeIndices: [left, right],
+            output: matches ? `Char match: '${charL}' === '${charR}'` : `Mismatch: '${charL}' !== '${charR}'`,
+            explanation: matches
+              ? `Character at left index ${left} ('${charL}') MATCHES character at right index ${right} ('${charR}').`
+              : `Character mismatch! '${charL}' !== '${charR}'. String is NOT a palindrome.`,
+          });
+
+          if (!matches) {
+            isPal = false;
+            break;
+          }
+          left++;
+          right--;
+        }
+
+        resultOutput = isPal ? 'true (Valid Palindrome)' : 'false (Not Palindrome)';
+      }
+      // -------------------------------------------------------------
+      // Pattern 3: Fibonacci Iterative Generator
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('fib') || (lowerCode.includes('fibonacci') && lowerCode.includes('push'))) {
+        const n = 7;
+        const fib = [0, 1];
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const fib = [0, 1]; n = ${n};`,
+          scopeName: 'Fibonacci Scope',
+          variables: { n, fib: JSON.stringify(fib) },
+          condition: 'Initialize Fibonacci Sequence Base',
+          conditionMet: true,
+          callStack: ['main()', 'fibonacci()'],
+          arrayState: [...fib],
+          explanation: `Fibonacci Generator: Generating first ${n} Fibonacci numbers starting with [0, 1].`,
+        });
+
+        for (let i = 2; i < n; i++) {
+          const nextVal = fib[i - 1] + fib[i - 2];
+          fib.push(nextVal);
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `fib[${i}] = fib[${i - 1}] + fib[${i - 2}] // ${fib[i - 1]} + ${fib[i - 2]} = ${nextVal}`,
+            scopeName: `Fibonacci Term ${i + 1}`,
+            variables: { i, 'fib[i-1]': fib[i - 1], 'fib[i-2]': fib[i - 2], nextVal },
+            condition: `Compute next term`,
+            conditionMet: true,
+            callStack: ['main()', 'fibonacci()'],
+            arrayState: [...fib],
+            activeIndices: [i - 2, i - 1, i],
+            output: `Generated term fib[${i}] = ${nextVal}`,
+            explanation: `Computed fib[${i}] = fib[${i - 1}] (${fib[i - 1]}) + fib[${i - 2}] (${fib[i - 2]}) = ${nextVal}. Sequence: [${fib.join(', ')}].`,
+          });
+        }
+
+        resultOutput = JSON.stringify(fib);
+      }
+      // -------------------------------------------------------------
+      // Pattern 4: Bubble Sort / Array Sorting Logic
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('bubble') || (lowerCode.includes('swap') && lowerCode.includes('for'))) {
         const initialArr = [5, 2, 8, 1, 4];
         let arr = [...initialArr];
 
@@ -65,7 +218,6 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
             const shouldSwap = val1 > val2;
 
             if (shouldSwap) {
-              // Swap logic
               [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
 
               traceSteps.push({
@@ -114,7 +266,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         });
       }
       // -------------------------------------------------------------
-      // Pattern 2: Binary Search Logic
+      // Pattern 5: Binary Search Logic
       // -------------------------------------------------------------
       else if (lowerCode.includes('binary') || (lowerCode.includes('mid') && lowerCode.includes('low'))) {
         const arr = [1, 3, 5, 7, 9, 11, 13, 15];
@@ -189,7 +341,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         resultOutput = `Index ${foundIndex}`;
       }
       // -------------------------------------------------------------
-      // Pattern 3: Two-Pointer Reverse / Palindrome Logic
+      // Pattern 6: Two-Pointer Reverse / Swap Logic
       // -------------------------------------------------------------
       else if (lowerCode.includes('reverse') || (lowerCode.includes('left') && lowerCode.includes('right'))) {
         let arr = [1, 2, 3, 4, 5];
@@ -235,7 +387,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         resultOutput = JSON.stringify(arr);
       }
       // -------------------------------------------------------------
-      // Pattern 4: Factorial / Recursive Call Stack Logic
+      // Pattern 7: Factorial / Recursive Call Stack Logic
       // -------------------------------------------------------------
       else if (lowerCode.includes('factorial') || lowerCode.includes('rec')) {
         function factTrace(n: number): number {
@@ -287,7 +439,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
         resultOutput = String(factResult);
       }
       // -------------------------------------------------------------
-      // Pattern 5: Default LeetCode / Odd-Even Count Logic
+      // Pattern 8: Default LeetCode / Odd-Even Count Logic
       // -------------------------------------------------------------
       else {
         const arr = [2, 3, 4, 5, 6];
@@ -399,7 +551,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
                   STEP {currentStepIndex + 1} / {steps.length}
                 </span>
               </h2>
-              <p className="text-[11px] text-text-subtle">Visual step-by-step sorting, binary search, recursion & array memory stepper</p>
+              <p className="text-[11px] text-text-subtle">Visual step-by-step sorting, two-sum map, binary search, recursion & memory stepper</p>
             </div>
           </div>
 
@@ -483,7 +635,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
             <div className="p-4 rounded-xl bg-bg-surface/80 border border-border-subtle flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs text-text-subtle font-medium">
                 <span className="flex items-center gap-1.5">
-                  <ArrowRightLeft className="w-4 h-4 text-emerald-400" /> Dynamic Visual Array Memory State
+                  <ArrowRightLeft className="w-4 h-4 text-emerald-400" /> Dynamic Visual Memory State
                 </span>
                 <span className="font-mono text-[11px] text-accent">Length: {currentStep.arrayState.length}</span>
               </div>
