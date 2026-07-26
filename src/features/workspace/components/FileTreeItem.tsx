@@ -33,6 +33,7 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
   // Context Menu State
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
+  const isDirectoryNode = Boolean(node.isDirectory || (node as unknown as { is_directory?: boolean }).is_directory);
   const isSelected = selectedNodeId === node.id;
   const paddingLeft = depth * 12 + 12;
 
@@ -40,7 +41,7 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
     e.stopPropagation();
     selectNode(node.id);
 
-    if (node.isDirectory) {
+    if (isDirectoryNode) {
       toggleNodeExpanded(node.id);
     } else {
       const content = await readFileText(node.path);
@@ -82,7 +83,7 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
   };
 
   const renderIcon = () => {
-    if (node.isDirectory) {
+    if (isDirectoryNode) {
       return node.isExpanded ? (
         <FolderOpen className="w-4 h-4 text-amber-400 shrink-0" />
       ) : (
@@ -136,7 +137,7 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
           }`}
         >
           <div className="flex items-center gap-1.5 truncate">
-            {node.isDirectory ? (
+            {isDirectoryNode ? (
               <span className="text-text-subtle hover:text-text-main shrink-0">
                 {node.isExpanded ? (
                   <ChevronDown className="w-3.5 h-3.5" />
@@ -184,7 +185,7 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
         </div>
       )}
 
-      {node.isDirectory && node.isExpanded && node.children && (
+      {isDirectoryNode && node.isExpanded && node.children && (
         <div className="flex flex-col">
           {node.children.map((child) => (
             <FileTreeItem key={child.id} node={child} depth={depth + 1} />

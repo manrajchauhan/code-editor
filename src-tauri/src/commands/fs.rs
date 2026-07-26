@@ -7,8 +7,10 @@ pub struct FileNode {
     pub id: String,
     pub name: String,
     pub path: String,
+    #[serde(rename = "isDirectory")]
     pub is_directory: bool,
     pub children: Option<Vec<FileNode>>,
+    #[serde(rename = "isExpanded")]
     pub is_expanded: Option<bool>,
 }
 
@@ -76,6 +78,10 @@ fn read_node_recursive(path: &Path) -> Result<FileNode, String> {
 
 #[tauri::command]
 pub async fn read_file_content(path: String) -> Result<String, String> {
+    let p = Path::new(&path);
+    if p.is_dir() {
+        return Err("Cannot read content of a directory".to_string());
+    }
     fs::read_to_string(&path).map_err(|e| format!("Failed to read file: {}", e))
 }
 
