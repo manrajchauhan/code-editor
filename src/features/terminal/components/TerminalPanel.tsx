@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
+import { Play, Package, TestTube, Trash2 } from 'lucide-react';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { executeShellCommand } from '../../../services/fileSystemService';
 
@@ -52,7 +53,7 @@ export const TerminalPanel: React.FC = () => {
     };
 
     term.writeln('\x1b[1;38;2;99;102;241mIntegrated Terminal & Process Shell v1.0.0\x1b[0m');
-    term.writeln('\x1b[38;2;156;163;175mConnected to workspace. Run "npm run dev", "npm install", "cat package.json", "ls", etc.\x1b[0m');
+    term.writeln('\x1b[38;2;156;163;175mFull CLI Access: npm run dev, npm install, cargo, node, git, etc.\x1b[0m');
     prompt();
 
     term.onData(async (data) => {
@@ -65,7 +66,7 @@ export const TerminalPanel: React.FC = () => {
 
         if (line.length > 0) {
           term.write('\r\n');
-          await handleCommand(line, term);
+          await runCommand(line, term);
         } else {
           prompt();
         }
@@ -99,7 +100,7 @@ export const TerminalPanel: React.FC = () => {
     };
   }, [currentFolderName]);
 
-  const handleCommand = async (commandLine: string, term: XTerm) => {
+  const runCommand = async (commandLine: string, term: XTerm) => {
     const activePath = currentFolderPath || '/Volumes/Personal Space/Cross Platform Apps/code-editor';
 
     if (commandLine.toLowerCase() === 'clear') {
@@ -115,9 +116,59 @@ export const TerminalPanel: React.FC = () => {
     term.write(`\x1b[38;2;99;102;241m${dirName}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m `);
   };
 
+  const executeQuickAction = async (cmd: string) => {
+    if (!xtermRef.current) return;
+    const term = xtermRef.current;
+    term.write(`\r\n\x1b[38;2;99;102;241m${currentFolderName || 'code-editor'}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m ${cmd}\r\n`);
+    await runCommand(cmd, term);
+  };
+
   return (
-    <div className="w-full h-full bg-[#0d0e11] p-2 overflow-hidden flex flex-col">
-      <div ref={terminalRef} className="w-full h-full overflow-hidden" />
+    <div className="w-full h-full bg-[#0d0e11] p-2 overflow-hidden flex flex-col gap-1.5">
+      {/* Terminal Toolbar Quick Actions */}
+      <div className="flex items-center justify-between px-2 py-1 bg-bg-surface border-b border-border-subtle text-[11px] text-text-subtle shrink-0">
+        <div className="flex items-center gap-1.5">
+          <span className="font-semibold text-text-main">Quick Actions:</span>
+          <button
+            type="button"
+            onClick={() => executeQuickAction('npm run dev')}
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
+          >
+            <Play className="w-3 h-3" />
+            <span>npm run dev</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => executeQuickAction('npm install')}
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors"
+          >
+            <Package className="w-3 h-3" />
+            <span>npm install</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => executeQuickAction('npm test')}
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+          >
+            <TestTube className="w-3 h-3" />
+            <span>npm test</span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (xtermRef.current) xtermRef.current.clear();
+          }}
+          className="flex items-center gap-1 px-2 py-0.5 rounded hover:bg-bg-hover text-text-subtle hover:text-text-main transition-colors"
+          title="Clear Terminal Screen"
+        >
+          <Trash2 className="w-3 h-3" />
+          <span>Clear</span>
+        </button>
+      </div>
+
+      <div ref={terminalRef} className="w-full flex-1 overflow-hidden" />
     </div>
   );
 };

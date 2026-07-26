@@ -32,9 +32,14 @@ pub async fn execute_shell_command(command: String, cwd: String) -> Result<Strin
         cwd
     };
 
+    let home = std::env::var("HOME").unwrap_or_default();
+    let current_path = std::env::var("PATH").unwrap_or_default();
+    let full_path = format!("{}/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:{}", home, current_path);
+
     let output = std::process::Command::new("sh")
         .arg("-c")
         .arg(&command)
+        .env("PATH", full_path)
         .current_dir(Path::new(&active_dir))
         .output()
         .map_err(|e| format!("Failed to execute shell command: {}", e))?;
