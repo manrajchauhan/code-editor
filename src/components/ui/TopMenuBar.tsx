@@ -59,11 +59,6 @@ export const TopMenuBar: React.FC<{ onOpenDevModal: () => void }> = ({ onOpenDev
     >
       {/* Left: Window App Title & Top Menus */}
       <div className="flex items-center gap-3" ref={menuRef}>
-        <div className="flex items-center gap-1.5 font-bold text-text-main text-[11px] tracking-tight pointer-events-none" data-tauri-drag-region>
-          <Code2 className="w-3.5 h-3.5 text-accent" />
-          <span>Code Editor</span>
-        </div>
-
         <div className="flex items-center gap-1 text-[11px] font-medium">
           {/* FILE MENU */}
           <div className="relative">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLayoutStore } from '../../stores/layoutStore';
-import { FileExplorerTree } from '../workspace/components/FileExplorerTree';
+import { FileExplorerPane } from '../workspace/components/FileExplorerPane';
 import { WorkspaceSearchPane } from '../search/components/WorkspaceSearchPane';
 import { SettingsPane } from '../settings/components/SettingsPane';
 
@@ -15,16 +15,18 @@ export const Sidebar: React.FC = () => {
       style={{ width: `${sidebarWidth}px` }}
       aria-label="Sidebar Panel"
     >
-      <div className="h-9 px-3 border-b border-border-subtle flex items-center justify-between bg-bg-surface/50">
-        <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-          {activeView}
-        </span>
-      </div>
-
-      <div className="flex-1 p-2 overflow-y-auto">
-        {activeView === 'explorer' && <FileExplorerTree />}
-        {activeView === 'search' && <WorkspaceSearchPane />}
-        {activeView === 'settings' && <SettingsPane />}
+      <div className="flex-1 overflow-y-auto">
+        {activeView === 'explorer' && <FileExplorerPane />}
+        {activeView === 'search' && (
+          <div className="p-2">
+            <WorkspaceSearchPane />
+          </div>
+        )}
+        {activeView === 'settings' && (
+          <div className="p-2">
+            <SettingsPane />
+          </div>
+        )}
       </div>
     </aside>
   );
