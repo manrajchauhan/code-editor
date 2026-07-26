@@ -2,7 +2,7 @@ export interface CommandItem {
   id: string;
   title: string;
   subtitle?: string;
-  category: 'Editor' | 'File' | 'View' | 'Settings';
+  category: 'Editor' | 'File' | 'View' | 'Settings' | 'Recent';
   shortcut?: string;
   action: () => void;
 }

@@ -12,6 +12,20 @@ import {
 } from '../../../services/fileSystemService';
 
 const DEFAULT_WORKSPACE_PATH = '/Volumes/Personal Space/Cross Platform Apps/code-editor';
+const RECENT_FOLDERS_KEY = 'code_editor_recent_folders';
+
+function getInitialRecentFolders(): string[] {
+  try {
+    const stored = localStorage.getItem(RECENT_FOLDERS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {
+    // Ignore parse error
+  }
+  return [DEFAULT_WORKSPACE_PATH];
+}
 
 function applyExpansionStates(node: FileNode, expandedIds: Set<string>): FileNode {
   const isExpanded = expandedIds.has(node.id) || (node.id === expandedIds.values().next().value);
@@ -54,6 +68,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   rootNode: null,
   selectedNodeId: null,
   isLoading: false,
+  recentFolders: getInitialRecentFolders(),
 
   openFolder: async (path?: string) => {
     set({ isLoading: true });
@@ -70,10 +85,20 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const expandedIds = new Set<string>([rawRoot.id]);
       const root = applyExpansionStates(rawRoot, expandedIds);
 
+      // Update recent folders
+      const currentRecents = get().recentFolders;
+      const updatedRecents = [targetPath, ...currentRecents.filter((p) => p !== targetPath)].slice(0, 10);
+      try {
+        localStorage.setItem(RECENT_FOLDERS_KEY, JSON.stringify(updatedRecents));
+      } catch (e) {
+        // Ignore storage error
+      }
+
       set({
         currentFolderPath: targetPath,
         currentFolderName: folderName,
         rootNode: root,
+        recentFolders: updatedRecents,
         isLoading: false,
       });
     } catch (error) {
@@ -143,5 +168,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       console.error('Failed to refresh workspace:', error);
       set({ isLoading: false });
     }
+  },
+
+  clearRecentFolders: () => {
+    try {
+      localStorage.removeItem(RECENT_FOLDERS_KEY);
+    } catch (e) {}
+    set({ recentFolders: [] });
   },
 }));

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Command, FileText, Layout, Settings, Activity, Columns, Keyboard } from 'lucide-react';
+import { Search, Command, FileText, Layout, Settings, Activity, Columns, Keyboard, Clock } from 'lucide-react';
 import { useCommandStore } from '../stores/commandStore';
 import { useEditorStore } from '../../editor/stores/editorStore';
 import { useLayoutStore } from '../../../stores/layoutStore';
@@ -13,7 +13,7 @@ export const CommandPaletteModal: React.FC = () => {
   const { isOpen, query, setQuery, closeCommandPalette } = useCommandStore();
   const { getActiveTab, markTabSaved, closeTab, newUntitledTab, toggleSplitView } = useEditorStore();
   const { toggleSidebar, setActiveView } = useLayoutStore();
-  const { openFolder } = useWorkspaceStore();
+  const { openFolder, recentFolders } = useWorkspaceStore();
   const { toggleDiagnostics } = useDiagnosticsStore();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -22,7 +22,18 @@ export const CommandPaletteModal: React.FC = () => {
 
   const activeTab = getActiveTab();
 
-  const commands: CommandItem[] = [
+  const recentCommands: CommandItem[] = recentFolders.map((path, index) => {
+    const name = path.split('/').pop() || path;
+    return {
+      id: `recent-folder-${index}`,
+      title: `Open Recent: ${name}`,
+      subtitle: path,
+      category: 'Recent',
+      action: () => openFolder(path),
+    };
+  });
+
+  const baseCommands: CommandItem[] = [
     {
       id: 'keybindings-ref',
       title: 'Help: View Keyboard Shortcuts',
@@ -120,9 +131,12 @@ export const CommandPaletteModal: React.FC = () => {
     },
   ];
 
+  const commands = [...recentCommands, ...baseCommands];
+
   const filteredCommands = commands.filter(
     (cmd) =>
       cmd.title.toLowerCase().includes(query.toLowerCase()) ||
+      cmd.subtitle?.toLowerCase().includes(query.toLowerCase()) ||
       cmd.category.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -210,6 +224,7 @@ export const CommandPaletteModal: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
+                        {cmd.category === 'Recent' && <Clock className="w-4 h-4 text-accent shrink-0" />}
                         {cmd.id === 'system-status' && <Activity className="w-4 h-4 text-emerald-400 shrink-0" />}
                         {cmd.id === 'toggle-split' && <Columns className="w-4 h-4 text-accent shrink-0" />}
                         {cmd.id === 'keybindings-ref' && <Keyboard className="w-4 h-4 text-accent shrink-0" />}

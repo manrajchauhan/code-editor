@@ -14,6 +14,8 @@ export interface WorkspaceState {
   rootNode: FileNode | null;
   selectedNodeId: string | null;
   isLoading: boolean;
+  recentFolders: string[];
+
   openFolder: (path?: string) => Promise<void>;
   toggleNodeExpanded: (id: string) => void;
   selectNode: (id: string) => void;
@@ -23,4 +25,5 @@ export interface WorkspaceState {
   duplicateItem: (itemPath: string) => Promise<void>;
   deleteItem: (itemPath: string) => Promise<void>;
   refreshWorkspace: () => Promise<void>;
+  clearRecentFolders: () => void;
 }
