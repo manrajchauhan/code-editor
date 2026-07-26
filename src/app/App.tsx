@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
 import { ActivityBar } from '../features/activity-bar/ActivityBar';
 import { Sidebar } from '../features/sidebar/Sidebar';
 import { PanelResizer } from '../components/ui/PanelResizer';
@@ -8,6 +7,7 @@ import { DiagnosticsPanel } from '../features/diagnostics/components/Diagnostics
 import { StatusBar } from '../features/status-bar/StatusBar';
 import { CommandPaletteModal } from '../features/command-palette/components/CommandPaletteModal';
 import { DeveloperModal } from '../components/ui/DeveloperModal';
+import { TopMenuBar } from '../components/ui/TopMenuBar';
 import { useLayoutStore } from '../stores/layoutStore';
 import { useEditorStore } from '../features/editor/stores/editorStore';
 import { useCommandStore } from '../features/command-palette/stores/commandStore';
@@ -80,26 +80,8 @@ export const App: React.FC = () => {
       <CommandPaletteModal />
       <DeveloperModal isOpen={isDevModalOpen} onClose={() => setIsDevModalOpen(false)} />
 
-      {/* Integrated Window Titlebar (Aligned with Native Traffic Light Buttons) */}
-      <header
-        data-tauri-drag-region
-        className="h-8 bg-bg-surface border-b border-border-subtle flex items-center justify-between pl-[76px] pr-3 text-xs text-text-muted select-none shrink-0"
-      >
-        {/* Left: Window App Title */}
-        <div className="flex items-center gap-1.5 font-semibold text-text-main text-[11px] tracking-tight pointer-events-none" data-tauri-drag-region>
-        </div>
-
-        {/* Top-Right: Developer Attribution Badge */}
-        <button
-          type="button"
-          onClick={() => setIsDevModalOpen(true)}
-          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent/15 text-accent transition-colors cursor-pointer text-[11px] font-medium shadow-sm"
-          title="Click to view developer info"
-        >
-          <Sparkles className="w-3 h-3 text-accent animate-pulse" />
-          <span>Developed by <strong className="font-semibold text-text-main">Manraj Chauhan</strong></span>
-        </button>
-      </header>
+      {/* Integrated Window Titlebar with File / Edit / View / Recent Menus */}
+      <TopMenuBar onOpenDevModal={() => setIsDevModalOpen(true)} />
 
       {/* Main Workspace (ActivityBar + Sidebar + Resizer + Editor Area) */}
       <div className="flex flex-1 overflow-hidden">
