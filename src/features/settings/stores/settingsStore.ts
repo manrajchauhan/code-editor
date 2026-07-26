@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 
+export type EditorTheme = 'vs-dark' | 'tokyo-night' | 'one-dark-pro' | 'vitesse-dark' | 'light';
+
 export interface SettingsState {
-  theme: 'vs-dark' | 'light';
+  theme: EditorTheme;
   fontSize: number;
   tabSize: number;
   wordWrap: 'on' | 'off';
   minimap: boolean;
-  setTheme: (theme: 'vs-dark' | 'light') => void;
+  setTheme: (theme: EditorTheme) => void;
   setFontSize: (size: number) => void;
   setTabSize: (size: number) => void;
   setWordWrap: (wrap: 'on' | 'off') => void;
@@ -14,7 +16,7 @@ export interface SettingsState {
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
-  theme: 'vs-dark',
+  theme: 'tokyo-night',
   fontSize: 14,
   tabSize: 2,
   wordWrap: 'on',

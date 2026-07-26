@@ -1,6 +1,6 @@
 import React from 'react';
 import { Settings, Sliders, Type, LayoutGrid, Eye } from 'lucide-react';
-import { useSettingsStore } from '../stores/settingsStore';
+import { useSettingsStore, EditorTheme } from '../stores/settingsStore';
 
 export const SettingsPane: React.FC = () => {
   const {
@@ -31,10 +31,13 @@ export const SettingsPane: React.FC = () => {
         </label>
         <select
           value={theme}
-          onChange={(e) => setTheme(e.target.value as 'vs-dark' | 'light')}
+          onChange={(e) => setTheme(e.target.value as EditorTheme)}
           className="bg-bg-surface border border-border-subtle rounded px-2 py-1.5 text-text-main text-xs outline-none focus:border-accent"
         >
-          <option value="vs-dark">VS-Dark (Default)</option>
+          <option value="tokyo-night">Tokyo Night (Dark)</option>
+          <option value="one-dark-pro">One Dark Pro</option>
+          <option value="vitesse-dark">Vitesse Dark</option>
+          <option value="vs-dark">VS-Dark (Classic)</option>
           <option value="light">VS-Light</option>
         </select>
       </div>
