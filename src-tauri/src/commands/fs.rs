@@ -34,16 +34,26 @@ pub async fn execute_shell_command(command: String, cwd: String) -> Result<Strin
 
     let home = std::env::var("HOME").unwrap_or_default();
     let current_path = std::env::var("PATH").unwrap_or_default();
-    let full_path = format!("{}/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:{}", home, current_path);
+    let full_path = format!(
+        "{}/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{}",
+        home, current_path
+    );
+
+    let shell = if Path::new("/bin/zsh").exists() {
+        "/bin/zsh"
+    } else {
+        "/bin/bash"
+    };
 
     let lower_cmd = command.to_lowercase();
     let is_daemon = lower_cmd.contains("dev") || lower_cmd.contains("start") || lower_cmd.contains("serve");
 
     if is_daemon {
-        let mut child = std::process::Command::new("sh")
+        let mut child = std::process::Command::new(shell)
             .arg("-c")
             .arg(&command)
             .env("PATH", &full_path)
+            .env("HOME", &home)
             .current_dir(Path::new(&active_dir))
             .spawn()
             .map_err(|e| format!("Failed to spawn dev process: {}", e))?;
@@ -51,22 +61,19 @@ pub async fn execute_shell_command(command: String, cwd: String) -> Result<Strin
         std::thread::sleep(std::time::Duration::from_millis(600));
 
         match child.try_wait() {
-            Ok(Some(status)) => {
-                Ok(format!("Process exited with status: {}\r\n", status))
-            }
-            Ok(None) => {
-                Ok(format!(
-                    "\x1b[32m🚀 Started development server process:\x1b[0m {}\r\n\x1b[36m  ➜ Local: http://localhost:1420/\x1b[0m\r\n\x1b[90mRunning continuously in background...\x1b[0m\r\n",
-                    command
-                ))
-            }
+            Ok(Some(status)) => Ok(format!("Process exited with status: {}\r\n", status)),
+            Ok(None) => Ok(format!(
+                "\x1b[32m🚀 Started development server process:\x1b[0m {}\r\n\x1b[36m  ➜ Local: http://localhost:1420/\x1b[0m\r\n\x1b[90mRunning continuously in background...\x1b[0m\r\n",
+                command
+            )),
             Err(e) => Err(format!("Error checking process status: {}", e)),
         }
     } else {
-        let output = std::process::Command::new("sh")
+        let output = std::process::Command::new(shell)
             .arg("-c")
             .arg(&command)
-            .env("PATH", full_path)
+            .env("PATH", &full_path)
+            .env("HOME", &home)
             .current_dir(Path::new(&active_dir))
             .output()
             .map_err(|e| format!("Failed to execute shell command: {}", e))?;
@@ -74,12 +81,16 @@ pub async fn execute_shell_command(command: String, cwd: String) -> Result<Strin
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
 
-        let combined = format!("{}{}", stdout, stderr);
-        if combined.trim().is_empty() {
-            Ok("Done.\r\n".to_string())
-        } else {
-            Ok(combined)
+        let mut combined = format!("{}{}", stdout, stderr);
+        if combined.is_empty() {
+            return Ok("".to_string());
         }
+
+        if !combined.ends_with('\n') {
+            combined.push('\n');
+        }
+
+        Ok(combined)
     }
 }
 
