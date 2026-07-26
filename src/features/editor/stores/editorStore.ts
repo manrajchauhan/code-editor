@@ -12,7 +12,7 @@ const INITIAL_WELCOME_TAB: EditorTab = {
 // Side-by-Side Split View & Breadcrumbs Active.
 
 export function greetDeveloper(name: string): string {
-  return \`Hello \${name}! Toggle side-by-side editing with ⌘\\\`;
+  return "Hello " + name + "! Toggle side-by-side editing with ⌘\\\\";
 }
 
 console.log(greetDeveloper('Developer'));
@@ -21,7 +21,7 @@ console.log(greetDeveloper('Developer'));
 // Side-by-Side Split View & Breadcrumbs Active.
 
 export function greetDeveloper(name: string): string {
-  return \`Hello \${name}! Toggle side-by-side editing with ⌘\\\`;
+  return "Hello " + name + "! Toggle side-by-side editing with ⌘\\\\";
 }
 
 console.log(greetDeveloper('Developer'));
