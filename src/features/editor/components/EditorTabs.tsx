@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { X, Plus, Edit2, Sparkles } from 'lucide-react';
+import { X, Plus, Edit2 } from 'lucide-react';
 import { useEditorStore } from '../stores/editorStore';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { createFileItem } from '../../../services/fileSystemService';
 import { FileIcon } from '../../../components/ui/FileIcon';
 
-interface EditorTabsProps {
-  onOpenDevModal?: () => void;
-}
-
-export const EditorTabs: React.FC<EditorTabsProps> = ({ onOpenDevModal }) => {
+export const EditorTabs: React.FC = () => {
   const { tabs, activeTabId, setActiveTab, closeTab, newUntitledTab, renameTab } = useEditorStore();
   const { currentFolderPath, renameItem, refreshWorkspace } = useWorkspaceStore();
 
@@ -133,19 +129,6 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({ onOpenDevModal }) => {
           <Plus className="w-4 h-4" />
         </button>
       </div>
-
-      {/* Top-Right Developer Attribution Badge */}
-      {onOpenDevModal && (
-        <button
-          type="button"
-          onClick={onOpenDevModal}
-          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent/15 border border-accent/30 hover:bg-accent/25 text-accent transition-colors cursor-pointer text-[11px] font-medium shrink-0 mr-2 shadow-sm"
-          title="Developed by Manraj Chauhan"
-        >
-          <Sparkles className="w-3 h-3 text-accent animate-pulse" />
-          <span>Developed by <strong className="font-semibold text-text-main">Manraj Chauhan</strong></span>
-        </button>
-      )}
     </div>
   );
 };

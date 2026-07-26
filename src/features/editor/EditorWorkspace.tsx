@@ -6,11 +6,7 @@ import { BreadcrumbsBar } from './components/BreadcrumbsBar';
 import { useEditorStore } from './stores/editorStore';
 import { saveFile } from '../../services/fileService';
 
-interface EditorWorkspaceProps {
-  onOpenDevModal?: () => void;
-}
-
-export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({ onOpenDevModal }) => {
+export const EditorWorkspace: React.FC = () => {
   const { tabs, isSplitView, getActiveTab, getSecondaryTab, markTabSaved, newUntitledTab, toggleSplitView } =
     useEditorStore();
 
@@ -29,7 +25,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({ onOpenDevModal
     <main className="flex-1 bg-bg-main flex flex-col h-full overflow-hidden select-none relative">
       <div className="flex items-center justify-between bg-bg-sidebar pr-2 border-b border-border-subtle shrink-0">
         <div className="flex-1 overflow-x-auto">
-          <EditorTabs onOpenDevModal={onOpenDevModal} />
+          <EditorTabs />
         </div>
         {tabs.length > 0 && (
           <button
