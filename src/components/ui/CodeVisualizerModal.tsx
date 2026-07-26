@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, ChevronRight, ChevronLeft, Cpu, X, CheckCircle, Terminal, Layers, Code2, Award, Zap } from 'lucide-react';
+import { Play, Pause, RotateCcw, ChevronRight, ChevronLeft, Cpu, X, CheckCircle, Terminal, Layers, Code2, Award, Zap, ArrowRightLeft } from 'lucide-react';
 
 interface Step {
   stepNumber: number;
@@ -9,6 +9,9 @@ interface Step {
   condition: string;
   conditionMet: boolean;
   callStack: string[];
+  arrayState?: (number | string)[];
+  activeIndices?: number[];
+  swapIndices?: [number, number];
   output?: string;
   explanation: string;
 }
@@ -26,7 +29,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
   const [speed, setSpeed] = useState(600);
   const [finalResult, setFinalResult] = useState<string | null>(null);
 
-  // Real-Time Universal JS/TS Code Execution & Trace Generator Engine
+  // Advanced Multi-Algorithm Educational Trace Generator Engine
   useEffect(() => {
     if (!isOpen || !code.trim()) return;
 
@@ -34,40 +37,273 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
     let resultOutput: string | null = null;
 
     try {
-      // 1. Detect arrays, driver arguments, and function declarations in code
-      const driverArrMatch = code.match(/const\s+(\w+)\s*=\s*(\[.*?\])/);
-      const driverArrayName = driverArrMatch ? driverArrMatch[1] : 'arr';
-      const driverArrayVal = driverArrMatch ? JSON.parse(driverArrMatch[2]) : [2, 3, 4, 5, 6];
+      const lowerCode = code.toLowerCase();
 
-      const funcMatch = code.match(/function\s+(\w+)\s*\((.*?)\)/);
-      const funcName = funcMatch ? funcMatch[1] : 'countOddEven';
-
-      // 2. Real Sandboxed Runtime Evaluation for LeetCode & Complex JS Logics
-      if (code.includes('countOddEven') || (code.includes('function') && code.includes('for'))) {
-        let countOdd = 0;
-        let countEven = 0;
-        const arr = [...driverArrayVal];
+      // -------------------------------------------------------------
+      // Pattern 1: Bubble Sort / Array Sorting Logic
+      // -------------------------------------------------------------
+      if (lowerCode.includes('bubble') || (lowerCode.includes('swap') && lowerCode.includes('for'))) {
+        const initialArr = [5, 2, 8, 1, 4];
+        let arr = [...initialArr];
 
         traceSteps.push({
           stepNumber: 1,
-          line: `const ${driverArrayName} = [${arr.join(', ')}];`,
-          scopeName: 'Global Scope',
-          variables: { [driverArrayName]: JSON.stringify(arr) },
-          condition: 'Initialize Input Driver Array',
+          line: `let arr = [${arr.join(', ')}];`,
+          scopeName: 'BubbleSort Scope',
+          variables: { array: JSON.stringify(arr), length: arr.length },
+          condition: 'Initialize Unsorted Array',
           conditionMet: true,
-          callStack: ['main()'],
-          explanation: `Driver Code: Initialized input array '${driverArrayName}' with values [${arr.join(', ')}].`,
+          callStack: ['main()', 'bubbleSort()'],
+          arrayState: [...arr],
+          explanation: `Learner Visualizer: Initialized unsorted input array [${arr.join(', ')}]. Goal: Sort elements in ascending order.`,
         });
 
+        for (let i = 0; i < arr.length - 1; i++) {
+          for (let j = 0; j < arr.length - i - 1; j++) {
+            const val1 = arr[j];
+            const val2 = arr[j + 1];
+            const shouldSwap = val1 > val2;
+
+            if (shouldSwap) {
+              // Swap logic
+              [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+
+              traceSteps.push({
+                stepNumber: traceSteps.length + 1,
+                line: `if (arr[${j}] > arr[${j + 1}]) -> Swap(${val1}, ${val2})`,
+                scopeName: `Pass ${i + 1}, Comparing [${j}] & [${j + 1}]`,
+                variables: { i, j, 'arr[j]': val1, 'arr[j+1]': val2, swapped: true },
+                condition: `${val1} > ${val2}`,
+                conditionMet: true,
+                callStack: ['main()', 'bubbleSort()', `Pass[${i}]`],
+                arrayState: [...arr],
+                activeIndices: [j, j + 1],
+                swapIndices: [j, j + 1],
+                output: `Swapped ${val1} and ${val2} -> Array: [${arr.join(', ')}]`,
+                explanation: `Comparing arr[${j}] (${val1}) and arr[${j + 1}] (${val2}). Since ${val1} > ${val2}, swapped their positions!`,
+              });
+            } else {
+              traceSteps.push({
+                stepNumber: traceSteps.length + 1,
+                line: `if (arr[${j}] > arr[${j + 1}]) // ${val1} <= ${val2}`,
+                scopeName: `Pass ${i + 1}, Comparing [${j}] & [${j + 1}]`,
+                variables: { i, j, 'arr[j]': val1, 'arr[j+1]': val2, swapped: false },
+                condition: `${val1} > ${val2}`,
+                conditionMet: false,
+                callStack: ['main()', 'bubbleSort()', `Pass[${i}]`],
+                arrayState: [...arr],
+                activeIndices: [j, j + 1],
+                explanation: `Comparing arr[${j}] (${val1}) and arr[${j + 1}] (${val2}). ${val1} <= ${val2} is in correct order. No swap required.`,
+              });
+            }
+          }
+        }
+
+        resultOutput = JSON.stringify(arr);
         traceSteps.push({
-          stepNumber: 2,
-          line: `function ${funcName}(${driverArrayName})`,
-          scopeName: `${funcName}() Scope`,
-          variables: { [driverArrayName]: JSON.stringify(arr), countOdd: 0, countEven: 0 },
-          condition: `Invoke Function ${funcName}([${arr.join(', ')}])`,
+          stepNumber: traceSteps.length + 1,
+          line: `return arr; // Sorted: [${arr.join(', ')}]`,
+          scopeName: 'BubbleSort Return',
+          variables: { sortedArray: JSON.stringify(arr) },
+          condition: 'Sorting Completed',
           conditionMet: true,
-          callStack: ['main()', `${funcName}()`],
-          explanation: `Entered function '${funcName}' with argument ${driverArrayName} = [${arr.join(', ')}]. Initialized countOdd = 0, countEven = 0.`,
+          callStack: ['main()'],
+          arrayState: [...arr],
+          output: `Sorted Array Result: [${arr.join(', ')}]`,
+          explanation: `Bubble Sort finished! All elements are now sorted in ascending order: [${arr.join(', ')}].`,
+        });
+      }
+      // -------------------------------------------------------------
+      // Pattern 2: Binary Search Logic
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('binary') || (lowerCode.includes('mid') && lowerCode.includes('low'))) {
+        const arr = [1, 3, 5, 7, 9, 11, 13, 15];
+        const target = 11;
+        let low = 0;
+        let high = arr.length - 1;
+        let foundIndex = -1;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const arr = [${arr.join(', ')}]; target = ${target};`,
+          scopeName: 'BinarySearch Scope',
+          variables: { target, low: 0, high: arr.length - 1 },
+          condition: 'Initialize Binary Search Bounds',
+          conditionMet: true,
+          callStack: ['main()', 'binarySearch()'],
+          arrayState: [...arr],
+          explanation: `Binary Search: Looking for target value ${target} in sorted array [${arr.join(', ')}].`,
+        });
+
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+          const midVal = arr[mid];
+
+          if (midVal === target) {
+            foundIndex = mid;
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `if (arr[mid] === target) // ${midVal} === ${target}`,
+              scopeName: `Search Range [${low}..${high}]`,
+              variables: { low, high, mid, 'arr[mid]': midVal, target },
+              condition: `${midVal} === ${target}`,
+              conditionMet: true,
+              callStack: ['main()', 'binarySearch()'],
+              arrayState: [...arr],
+              activeIndices: [mid],
+              output: `Found target ${target} at index ${mid}!`,
+              explanation: `Calculated mid index ${mid} (value ${midVal}). Target ${target} MATCHED at index ${mid}!`,
+            });
+            break;
+          } else if (midVal < target) {
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `low = mid + 1; // ${midVal} < ${target}`,
+              scopeName: `Search Range [${low}..${high}]`,
+              variables: { low, high, mid, 'arr[mid]': midVal, target },
+              condition: `${midVal} < ${target}`,
+              conditionMet: true,
+              callStack: ['main()', 'binarySearch()'],
+              arrayState: [...arr],
+              activeIndices: [mid],
+              explanation: `mid value ${midVal} < target ${target}. Target lies in right half. Updating low pointer from ${low} to ${mid + 1}.`,
+            });
+            low = mid + 1;
+          } else {
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `high = mid - 1; // ${midVal} > ${target}`,
+              scopeName: `Search Range [${low}..${high}]`,
+              variables: { low, high, mid, 'arr[mid]': midVal, target },
+              condition: `${midVal} > ${target}`,
+              conditionMet: true,
+              callStack: ['main()', 'binarySearch()'],
+              arrayState: [...arr],
+              activeIndices: [mid],
+              explanation: `mid value ${midVal} > target ${target}. Target lies in left half. Updating high pointer from ${high} to ${mid - 1}.`,
+            });
+            high = mid - 1;
+          }
+        }
+
+        resultOutput = `Index ${foundIndex}`;
+      }
+      // -------------------------------------------------------------
+      // Pattern 3: Two-Pointer Reverse / Palindrome Logic
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('reverse') || (lowerCode.includes('left') && lowerCode.includes('right'))) {
+        let arr = [1, 2, 3, 4, 5];
+        let left = 0;
+        let right = arr.length - 1;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `let arr = [${arr.join(', ')}]; left = 0, right = ${right}`,
+          scopeName: 'TwoPointer Scope',
+          variables: { left, right, array: JSON.stringify(arr) },
+          condition: 'Initialize Two Pointers',
+          conditionMet: true,
+          callStack: ['main()', 'twoPointer()'],
+          arrayState: [...arr],
+          explanation: `Two-Pointer: Reversing array [${arr.join(', ')}] by swapping elements from opposite ends.`,
+        });
+
+        while (left < right) {
+          const lVal = arr[left];
+          const rVal = arr[right];
+          [arr[left], arr[right]] = [arr[right], arr[left]];
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `Swap(arr[${left}], arr[${right}]) // ${lVal} <-> ${rVal}`,
+            scopeName: `Pointers: Left=${left}, Right=${right}`,
+            variables: { left, right, 'arr[left]': rVal, 'arr[right]': lVal },
+            condition: `${left} < ${right}`,
+            conditionMet: true,
+            callStack: ['main()', 'twoPointer()'],
+            arrayState: [...arr],
+            activeIndices: [left, right],
+            swapIndices: [left, right],
+            output: `Swapped index ${left} (${lVal}) with index ${right} (${rVal})`,
+            explanation: `Swapped left element (${lVal}) with right element (${rVal}). Moving pointers: left++ (${left + 1}), right-- (${right - 1}).`,
+          });
+
+          left++;
+          right--;
+        }
+
+        resultOutput = JSON.stringify(arr);
+      }
+      // -------------------------------------------------------------
+      // Pattern 4: Factorial / Recursive Call Stack Logic
+      // -------------------------------------------------------------
+      else if (lowerCode.includes('factorial') || lowerCode.includes('rec')) {
+        function factTrace(n: number): number {
+          if (n <= 1) {
+            traceSteps.push({
+              stepNumber: traceSteps.length + 1,
+              line: `if (n <= 1) return 1; // n = ${n}`,
+              scopeName: `factorial(${n}) [Base Case]`,
+              variables: { n, returnVal: 1 },
+              condition: `${n} <= 1`,
+              conditionMet: true,
+              callStack: ['main()', ...Array.from({ length: 5 - n }, (_, idx) => `factorial(${5 - idx})`)],
+              output: `Base case hit: factorial(${n}) = 1`,
+              explanation: `Base Case Reached: n = ${n}. Returning 1 up the recursive call stack.`,
+            });
+            return 1;
+          }
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `return n * factorial(n - 1); // n = ${n}`,
+            scopeName: `factorial(${n}) [Recursive Call]`,
+            variables: { n, next: n - 1 },
+            condition: `${n} > 1`,
+            conditionMet: true,
+            callStack: ['main()', ...Array.from({ length: 6 - n }, (_, idx) => `factorial(${5 - idx})`)],
+            explanation: `Recursive Step: Evaluating ${n} * factorial(${n - 1}). Pushing new frame to call stack.`,
+          });
+
+          const sub = factTrace(n - 1);
+          const res = n * sub;
+
+          traceSteps.push({
+            stepNumber: traceSteps.length + 1,
+            line: `return ${n} * ${sub} = ${res};`,
+            scopeName: `factorial(${n}) [Unwinding Stack]`,
+            variables: { n, subFactorial: sub, total: res },
+            condition: 'Stack Frame Unwound',
+            conditionMet: true,
+            callStack: ['main()', ...Array.from({ length: 5 - n }, (_, idx) => `factorial(${5 - idx})`)],
+            output: `factorial(${n}) = ${res}`,
+            explanation: `Unwinding Stack: Received sub-result ${sub}. Computed ${n} * ${sub} = ${res}.`,
+          });
+
+          return res;
+        }
+
+        const factResult = factTrace(5);
+        resultOutput = String(factResult);
+      }
+      // -------------------------------------------------------------
+      // Pattern 5: Default LeetCode / Odd-Even Count Logic
+      // -------------------------------------------------------------
+      else {
+        const arr = [2, 3, 4, 5, 6];
+        let countOdd = 0;
+        let countEven = 0;
+
+        traceSteps.push({
+          stepNumber: 1,
+          line: `const arr = [${arr.join(', ')}];`,
+          scopeName: 'Global Scope',
+          variables: { arr: JSON.stringify(arr) },
+          condition: 'Initialize Driver Array',
+          conditionMet: true,
+          callStack: ['main()'],
+          arrayState: [...arr],
+          explanation: `Driver Code: Initialized input array [${arr.join(', ')}]. Tracking odd vs even element counts.`,
         });
 
         for (let i = 0; i < arr.length; i++) {
@@ -79,17 +315,13 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
             traceSteps.push({
               stepNumber: traceSteps.length + 1,
               line: `if (arr[${i}] % 2 === 0) { countEven++ } // ${val} % 2 = 0`,
-              scopeName: `${funcName}() [Loop Iteration ${i + 1}]`,
-              variables: {
-                i,
-                'arr[i]': val,
-                'val % 2': val % 2,
-                countEven,
-                countOdd,
-              },
+              scopeName: `countOddEven() [Iteration ${i + 1}]`,
+              variables: { i, 'arr[i]': val, countEven, countOdd },
               condition: `${val} % 2 === 0`,
               conditionMet: true,
-              callStack: ['main()', `${funcName}()`, `Loop[${i}]`],
+              callStack: ['main()', 'countOddEven()', `Loop[${i}]`],
+              arrayState: [...arr],
+              activeIndices: [i],
               output: `Element ${val} is EVEN -> countEven = ${countEven}`,
               explanation: `Element arr[${i}] = ${val}. Evaluated condition ${val} % 2 === 0 -> TRUE (Even). Incremented countEven to ${countEven}.`,
             });
@@ -98,58 +330,20 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
             traceSteps.push({
               stepNumber: traceSteps.length + 1,
               line: `else { countOdd++ } // ${val} % 2 = 1`,
-              scopeName: `${funcName}() [Loop Iteration ${i + 1}]`,
-              variables: {
-                i,
-                'arr[i]': val,
-                'val % 2': val % 2,
-                countEven,
-                countOdd,
-              },
+              scopeName: `countOddEven() [Iteration ${i + 1}]`,
+              variables: { i, 'arr[i]': val, countEven, countOdd },
               condition: `${val} % 2 === 0`,
               conditionMet: false,
-              callStack: ['main()', `${funcName}()`, `Loop[${i}]`],
+              callStack: ['main()', 'countOddEven()', `Loop[${i}]`],
+              arrayState: [...arr],
+              activeIndices: [i],
               output: `Element ${val} is ODD -> countOdd = ${countOdd}`,
               explanation: `Element arr[${i}] = ${val}. Evaluated condition ${val} % 2 === 0 -> FALSE (Odd). Incremented countOdd to ${countOdd}.`,
             });
           }
         }
 
-        const returnVal = [countOdd, countEven];
-        resultOutput = JSON.stringify(returnVal);
-
-        traceSteps.push({
-          stepNumber: traceSteps.length + 1,
-          line: `return [countOdd, countEven]; // [${countOdd}, ${countEven}]`,
-          scopeName: `${funcName}() Return`,
-          variables: { countOdd, countEven, 'returnVal': JSON.stringify(returnVal) },
-          condition: 'Function Return Execution',
-          conditionMet: true,
-          callStack: ['main()'],
-          output: `Final Result: [countOdd: ${countOdd}, countEven: ${countEven}]`,
-          explanation: `Completed loop iterations over all ${arr.length} elements. Returning answer array [countOdd: ${countOdd}, countEven: ${countEven}].`,
-        });
-      } else {
-        // Universal AST Stepper for general code snippets
-        const lines = code.split('\n').map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith('//'));
-        const vars: Record<string, any> = {};
-
-        lines.forEach((line, idx) => {
-          const assign = line.match(/(?:let|var|const)\s+(\w+)\s*=\s*(.*)/);
-          if (assign) vars[assign[1]] = assign[2].replace(/;$/, '');
-
-          traceSteps.push({
-            stepNumber: idx + 1,
-            line,
-            scopeName: 'Global Execution Scope',
-            variables: { ...vars, lineNo: idx + 1 },
-            condition: 'CPU Instruction Executed',
-            conditionMet: true,
-            callStack: ['main()'],
-            output: line.includes('console.log') ? line.replace(/.*console\.log\((.*)\).*/, '$1') : undefined,
-            explanation: `Step ${idx + 1}: Executed JS instruction -> ${line}`,
-          });
-        });
+        resultOutput = JSON.stringify([countOdd, countEven]);
       }
 
       setFinalResult(resultOutput);
@@ -189,7 +383,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl bg-bg-sidebar border border-border-strong rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh]"
+        className="w-full max-w-3xl bg-bg-sidebar border border-border-strong rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -200,12 +394,12 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
             </div>
             <div className="flex flex-col">
               <h2 className="text-sm font-bold text-text-main tracking-tight flex items-center gap-2">
-                LeetCode & JS Logic Runtime Visualizer
+                Algorithm & Logic Educational Visualizer
                 <span className="px-2 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-400 font-mono font-semibold">
                   STEP {currentStepIndex + 1} / {steps.length}
                 </span>
               </h2>
-              <p className="text-[11px] text-text-subtle">Universal JavaScript / TypeScript algorithm & array state analyzer</p>
+              <p className="text-[11px] text-text-subtle">Visual step-by-step sorting, binary search, recursion & array memory stepper</p>
             </div>
           </div>
 
@@ -233,7 +427,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
                 }`}
               >
                 {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                <span>{isPlaying ? 'Pause Stepper' : 'Play Execution Trace'}</span>
+                <span>{isPlaying ? 'Pause Stepper' : 'Play Logic Trace'}</span>
               </button>
 
               <button
@@ -284,6 +478,45 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
             </div>
           </div>
 
+          {/* Visual Array Memory Bars (For Sorting / Search / Pointers) */}
+          {currentStep?.arrayState && (
+            <div className="p-4 rounded-xl bg-bg-surface/80 border border-border-subtle flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs text-text-subtle font-medium">
+                <span className="flex items-center gap-1.5">
+                  <ArrowRightLeft className="w-4 h-4 text-emerald-400" /> Dynamic Visual Array Memory State
+                </span>
+                <span className="font-mono text-[11px] text-accent">Length: {currentStep.arrayState.length}</span>
+              </div>
+
+              <div className="flex items-end justify-center gap-3 pt-4 pb-2 h-24 bg-[#0d0e11] rounded-lg border border-border-subtle px-4">
+                {currentStep.arrayState.map((val, idx) => {
+                  const numVal = typeof val === 'number' ? val : 5;
+                  const heightPct = Math.min(100, Math.max(25, numVal * 12));
+                  const isActive = currentStep.activeIndices?.includes(idx);
+                  const isSwapped = currentStep.swapIndices?.includes(idx);
+
+                  return (
+                    <div key={idx} className="flex flex-col items-center gap-1 flex-1 max-w-[48px] transition-all duration-300">
+                      <span className="text-[10px] font-mono text-text-subtle">[{idx}]</span>
+                      <div
+                        style={{ height: `${heightPct}%` }}
+                        className={`w-full rounded-t flex items-center justify-center font-mono font-bold text-xs transition-all duration-300 ${
+                          isSwapped
+                            ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/30 scale-105'
+                            : isActive
+                            ? 'bg-emerald-400 text-black shadow-lg shadow-emerald-400/30 scale-105'
+                            : 'bg-accent/40 text-text-main border border-accent/60'
+                        }`}
+                      >
+                        {val}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Current AST Active Instruction Card */}
           {currentStep && (
             <div className="p-4 rounded-xl bg-bg-surface border border-accent/40 flex flex-col gap-3">
@@ -319,16 +552,16 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
               {/* Call Stack Frame */}
               <div className="p-3.5 rounded-xl bg-bg-surface border border-border-subtle flex flex-col gap-2">
                 <span className="text-xs font-semibold text-text-main flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-accent" /> Call Stack
+                  <Layers className="w-3.5 h-3.5 text-accent" /> Call Stack Frames
                 </span>
-                <div className="flex flex-col gap-1 font-mono text-xs max-h-36 overflow-y-auto">
+                <div className="flex flex-col gap-1 font-mono text-xs max-h-32 overflow-y-auto">
                   {currentStep.callStack.map((frame, idx) => (
                     <div
                       key={idx}
                       className="px-2 py-1 rounded bg-[#0d0e11] border border-border-subtle text-accent text-[11px] flex items-center justify-between"
                     >
                       <span>{frame}</span>
-                      <span className="text-[9px] text-text-muted">frame #{idx}</span>
+                      <span className="text-[9px] text-text-muted">#{idx}</span>
                     </div>
                   ))}
                 </div>
@@ -339,7 +572,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
                 <span className="text-xs font-semibold text-text-main flex items-center gap-1.5">
                   <Cpu className="w-3.5 h-3.5 text-emerald-400" /> Variable State
                 </span>
-                <div className="flex flex-col gap-1.5 font-mono text-xs max-h-36 overflow-y-auto">
+                <div className="flex flex-col gap-1.5 font-mono text-xs max-h-32 overflow-y-auto">
                   {Object.entries(currentStep.variables).map(([k, v]) => (
                     <div
                       key={k}
@@ -357,7 +590,7 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
                 <span className="text-xs font-semibold text-text-main flex items-center gap-1.5">
                   <Terminal className="w-3.5 h-3.5 text-purple-400" /> Output Stream
                 </span>
-                <div className="max-h-36 overflow-y-auto p-2 rounded bg-[#0d0e11] border border-border-subtle font-mono text-xs flex flex-col gap-1">
+                <div className="max-h-32 overflow-y-auto p-2 rounded bg-[#0d0e11] border border-border-subtle font-mono text-xs flex flex-col gap-1">
                   {steps.slice(0, currentStepIndex + 1).map((s, i) => (
                     s.output ? (
                       <div key={i} className="text-emerald-400 flex items-center gap-1 text-[11px]">
