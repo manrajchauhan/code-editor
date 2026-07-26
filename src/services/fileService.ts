@@ -15,12 +15,11 @@ export async function saveFile(filePath: string | undefined, content: string): P
   }
 
   try {
-    // Attempt Tauri native invoke if running in desktop shell
-    await invoke('write_file', { path: filePath, content });
+    // Native Tauri IPC command write_file_content writes content directly to filesystem
+    await invoke('write_file_content', { path: filePath, content });
     return { success: true, message: `Successfully saved to ${filePath}` };
   } catch (error) {
-    // Web dev mode fallback
-    console.info('[FileService] Tauri IPC write_file not active in browser dev mode:', error);
-    return { success: true, message: 'Saved content in local editor state.' };
+    console.error('[FileService] Failed to save file:', error);
+    return { success: false, message: String(error) };
   }
 }
