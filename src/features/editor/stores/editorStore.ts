@@ -4,7 +4,6 @@ import { detectLanguage } from '../utils/languageDetector';
 import { saveFile } from '../../../services/fileService';
 
 let untitledCounter = 1;
-const saveTimers: Record<string, ReturnType<typeof setTimeout>> = {};
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   tabs: [],
@@ -42,11 +41,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   closeTab: (id) => {
-    if (saveTimers[id]) {
-      clearTimeout(saveTimers[id]);
-      delete saveTimers[id];
-    }
-
     set((state) => {
       const remaining = state.tabs.filter((t) => t.id !== id);
       let nextActiveId = state.activeTabId;
@@ -98,19 +92,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         return {
           ...tab,
           content: newContent,
-          isDirty: true,
+          savedContent: newContent,
+          isDirty: false,
         };
       }),
     }));
 
-    // Live Debounced Disk Sync (Auto-Save to physical disk)
+    // Instant Physical System Disk Sync
     const tab = get().tabs.find((t) => t.id === id);
     if (tab && tab.filePath) {
-      if (saveTimers[id]) clearTimeout(saveTimers[id]);
-      saveTimers[id] = setTimeout(async () => {
-        await saveFile(tab.filePath, newContent);
-        get().markTabSaved(id);
-      }, 400);
+      saveFile(tab.filePath, newContent);
     }
   },
 
