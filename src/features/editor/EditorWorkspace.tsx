@@ -2,7 +2,6 @@ import React from 'react';
 import { Plus, Columns, FolderOpen, Clock, Sparkles } from 'lucide-react';
 import { EditorTabs } from './components/EditorTabs';
 import { MonacoEditorContainer } from './components/MonacoEditorContainer';
-import { BreadcrumbsBar } from './components/BreadcrumbsBar';
 import { useEditorStore } from './stores/editorStore';
 import { useWorkspaceStore } from '../workspace/stores/workspaceStore';
 import { saveFile } from '../../services/fileService';
@@ -50,35 +49,26 @@ export const EditorWorkspace: React.FC = () => {
           {isSplitView && secondaryTab ? (
             <div className="flex-1 w-full h-full flex overflow-hidden">
               {/* Primary Pane */}
-              <div className="flex-1 flex flex-col h-full border-r border-border-subtle overflow-hidden">
-                <BreadcrumbsBar tabId="primary" />
-                <div className="flex-1 relative">
-                  <MonacoEditorContainer tabId="primary" onSaveRequested={handleSaveActiveTab} />
-                </div>
+              <div className="flex-1 flex flex-col h-full border-r border-border-subtle overflow-hidden relative">
+                <MonacoEditorContainer tabId="primary" onSaveRequested={handleSaveActiveTab} />
               </div>
 
               {/* Secondary Pane */}
-              <div className="flex-1 flex flex-col h-full overflow-hidden">
-                <BreadcrumbsBar tabId="secondary" />
-                <div className="flex-1 relative">
-                  <MonacoEditorContainer tabId="secondary" onSaveRequested={handleSaveActiveTab} />
-                </div>
+              <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+                <MonacoEditorContainer tabId="secondary" onSaveRequested={handleSaveActiveTab} />
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
-              <BreadcrumbsBar />
-              <div className="flex-1 relative">
-                <MonacoEditorContainer onSaveRequested={handleSaveActiveTab} />
-              </div>
+            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+              <MonacoEditorContainer onSaveRequested={handleSaveActiveTab} />
             </div>
           )}
         </div>
       ) : (
-        /* React Workspace Welcome Screen Dashboard */
+        /* Workspace Welcome Screen Dashboard */
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none overflow-y-auto">
           <div className="flex flex-col items-center gap-6 max-w-lg w-full">
-            {/* React Atom Badge */}
+            {/* Atom Badge */}
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-sky-500/20 border border-accent/30 flex items-center justify-center shadow-lg">
                 <svg className="w-8 h-8 animate-[spin_12s_linear_infinite]" viewBox="0 0 24 24" fill="none">
