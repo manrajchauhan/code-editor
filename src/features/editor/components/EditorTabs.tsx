@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { X, Plus, Edit2 } from 'lucide-react';
+import { X, Plus, Edit2, Sparkles } from 'lucide-react';
 import { useEditorStore } from '../stores/editorStore';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { createFileItem } from '../../../services/fileSystemService';
 import { FileIcon } from '../../../components/ui/FileIcon';
 
-export const EditorTabs: React.FC = () => {
+interface EditorTabsProps {
+  onOpenDevModal?: () => void;
+}
+
+export const EditorTabs: React.FC<EditorTabsProps> = ({ onOpenDevModal }) => {
   const { tabs, activeTabId, setActiveTab, closeTab, newUntitledTab, renameTab } = useEditorStore();
   const { currentFolderPath, renameItem, refreshWorkspace } = useWorkspaceStore();
 
@@ -45,7 +49,7 @@ export const EditorTabs: React.FC = () => {
   };
 
   return (
-    <div className="h-9 bg-bg-sidebar border-b border-border-subtle flex items-center px-1 gap-1 overflow-x-auto select-none shrink-0">
+    <div className="h-9 bg-bg-sidebar border-b border-border-subtle flex items-center justify-between px-1 gap-1 select-none shrink-0 w-full">
       <div className="flex items-center gap-1 overflow-x-auto flex-1">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
@@ -119,16 +123,29 @@ export const EditorTabs: React.FC = () => {
             </div>
           );
         })}
+
+        <button
+          type="button"
+          onClick={newUntitledTab}
+          className="p-1 rounded text-text-subtle hover:text-text-main hover:bg-bg-hover transition-colors mr-1 shrink-0"
+          title="New File (⌘N)"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={newUntitledTab}
-        className="p-1 rounded text-text-subtle hover:text-text-main hover:bg-bg-hover transition-colors mr-1 shrink-0"
-        title="New File (⌘N)"
-      >
-        <Plus className="w-4 h-4" />
-      </button>
+      {/* Top-Right Developer Attribution Badge */}
+      {onOpenDevModal && (
+        <button
+          type="button"
+          onClick={onOpenDevModal}
+          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent/15 border border-accent/30 hover:bg-accent/25 text-accent transition-colors cursor-pointer text-[11px] font-medium shrink-0 mr-2 shadow-sm"
+          title="Developed by Manraj Chauhan"
+        >
+          <Sparkles className="w-3 h-3 text-accent animate-pulse" />
+          <span>Developed by <strong className="font-semibold text-text-main">Manraj Chauhan</strong></span>
+        </button>
+      )}
     </div>
   );
 };
