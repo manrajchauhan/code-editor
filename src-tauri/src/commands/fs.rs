@@ -25,6 +25,32 @@ pub async fn open_folder_dialog() -> Result<Option<String>, String> {
 }
 
 #[tauri::command]
+pub async fn execute_shell_command(command: String, cwd: String) -> Result<String, String> {
+    let active_dir = if cwd.is_empty() {
+        ".".to_string()
+    } else {
+        cwd
+    };
+
+    let output = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(&command)
+        .current_dir(Path::new(&active_dir))
+        .output()
+        .map_err(|e| format!("Failed to execute shell command: {}", e))?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+
+    let combined = format!("{}{}", stdout, stderr);
+    if combined.trim().is_empty() {
+        Ok("Done.\r\n".to_string())
+    } else {
+        Ok(combined)
+    }
+}
+
+#[tauri::command]
 pub async fn read_directory_tree(path: String) -> Result<FileNode, String> {
     let p = Path::new(&path);
     if !p.exists() {
@@ -52,7 +78,6 @@ fn read_node_recursive(path: &Path) -> Result<FileNode, String> {
                 let child_path = entry.path();
                 if let Some(child_name) = child_path.file_name() {
                     let s = child_name.to_string_lossy();
-                    // Skip internal .git metadata folder to preserve performance
                     if s == ".git" {
                         continue;
                     }

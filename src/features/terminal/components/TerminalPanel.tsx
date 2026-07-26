@@ -3,7 +3,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
-import { readFileText, createFileItem, createDirItem, deleteFileSystemItem } from '../../../services/fileSystemService';
+import { executeShellCommand } from '../../../services/fileSystemService';
 
 export const TerminalPanel: React.FC = () => {
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -11,7 +11,7 @@ export const TerminalPanel: React.FC = () => {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const inputBufferRef = useRef<string>('');
 
-  const { currentFolderPath, currentFolderName, rootNode, refreshWorkspace } = useWorkspaceStore();
+  const { currentFolderPath, currentFolderName, refreshWorkspace } = useWorkspaceStore();
 
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -47,12 +47,12 @@ export const TerminalPanel: React.FC = () => {
     fitAddonRef.current = fitAddon;
 
     const prompt = () => {
-      const dirName = currentFolderName || 'my-project';
+      const dirName = currentFolderName || 'code-editor';
       term.write(`\r\n\x1b[38;2;99;102;241m${dirName}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m `);
     };
 
-    term.writeln('\x1b[1;38;2;99;102;241mLocal Code Editor Shell v1.0.0\x1b[0m');
-    term.writeln('\x1b[38;2;156;163;175mType "help" to view available terminal commands.\x1b[0m');
+    term.writeln('\x1b[1;38;2;99;102;241mIntegrated Terminal & Process Shell v1.0.0\x1b[0m');
+    term.writeln('\x1b[38;2;156;163;175mConnected to workspace. Run "npm run dev", "npm install", "cat package.json", "ls", etc.\x1b[0m');
     prompt();
 
     term.onData(async (data) => {
@@ -100,72 +100,18 @@ export const TerminalPanel: React.FC = () => {
   }, [currentFolderName]);
 
   const handleCommand = async (commandLine: string, term: XTerm) => {
-    const parts = commandLine.split(' ');
-    const cmd = parts[0].toLowerCase();
-    const args = parts.slice(1);
-    const activePath = currentFolderPath || '/my-project';
+    const activePath = currentFolderPath || '/Volumes/Personal Space/Cross Platform Apps/code-editor';
 
-    if (cmd === 'clear') {
+    if (commandLine.toLowerCase() === 'clear') {
       term.clear();
-    } else if (cmd === 'help') {
-      term.writeln('Available Commands:');
-      term.writeln('  ls / dir       - List files in current directory');
-      term.writeln('  pwd            - Print active working directory');
-      term.writeln('  cat <file>     - Display file content');
-      term.writeln('  touch <file>   - Create a new file');
-      term.writeln('  mkdir <dir>    - Create a new directory');
-      term.writeln('  rm <file>      - Delete a file or directory');
-      term.writeln('  clear          - Clear terminal screen');
-      term.writeln('  node -v        - Print Node version');
-    } else if (cmd === 'pwd') {
-      term.writeln(activePath);
-    } else if (cmd === 'ls' || cmd === 'dir') {
-      if (rootNode?.children) {
-        const items = rootNode.children.map((c) => (c.isDirectory ? `\x1b[34m${c.name}/\x1b[0m` : c.name));
-        term.writeln(items.join('  '));
-      } else {
-        term.writeln('App.tsx  main.ts  styles.css  package.json  README.md');
-      }
-    } else if (cmd === 'cat') {
-      if (args.length === 0) {
-        term.writeln('Usage: cat <file_name>');
-      } else {
-        const targetPath = `${activePath}/${args[0]}`;
-        const content = await readFileText(targetPath);
-        term.writeln(content);
-      }
-    } else if (cmd === 'touch') {
-      if (args.length === 0) {
-        term.writeln('Usage: touch <file_name>');
-      } else {
-        await createFileItem(activePath, args[0]);
-        await refreshWorkspace();
-        term.writeln(`Created file: ${args[0]}`);
-      }
-    } else if (cmd === 'mkdir') {
-      if (args.length === 0) {
-        term.writeln('Usage: mkdir <folder_name>');
-      } else {
-        await createDirItem(activePath, args[0]);
-        await refreshWorkspace();
-        term.writeln(`Created directory: ${args[0]}`);
-      }
-    } else if (cmd === 'rm') {
-      if (args.length === 0) {
-        term.writeln('Usage: rm <file_name>');
-      } else {
-        const targetPath = `${activePath}/${args[0]}`;
-        await deleteFileSystemItem(targetPath);
-        await refreshWorkspace();
-        term.writeln(`Removed: ${args[0]}`);
-      }
-    } else if (cmd === 'node') {
-      term.writeln('v23.6.0');
     } else {
-      term.writeln(`command not found: ${cmd}. Type "help" for commands.`);
+      const output = await executeShellCommand(commandLine, activePath);
+      const formattedOutput = output.replace(/\r?\n/g, '\r\n');
+      term.write(formattedOutput);
+      await refreshWorkspace();
     }
 
-    const dirName = currentFolderName || 'my-project';
+    const dirName = currentFolderName || 'code-editor';
     term.write(`\x1b[38;2;99;102;241m${dirName}\x1b[0m \x1b[38;2;156;163;175m$\x1b[0m `);
   };
 

@@ -78,6 +78,14 @@ export async function openFolderDialog(): Promise<string | null> {
   }
 }
 
+export async function executeShellCommand(command: string, cwd: string): Promise<string> {
+  try {
+    return await invoke<string>('execute_shell_command', { command, cwd });
+  } catch (error) {
+    return `Error: ${error}\r\n`;
+  }
+}
+
 export async function readDirectoryTree(folderPath: string): Promise<FileNode> {
   try {
     return await invoke<FileNode>('read_directory_tree', { path: folderPath });
