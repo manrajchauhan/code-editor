@@ -176,6 +176,9 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
       const tsDefaults = monaco.languages.typescript.typescriptDefaults;
       const jsDefaults = monaco.languages.typescript.javascriptDefaults;
 
+      tsDefaults.setEagerModelSync(true);
+      jsDefaults.setEagerModelSync(true);
+
       tsDefaults.setCompilerOptions({
         target: monaco.languages.typescript.ScriptTarget.ESNext,
         module: monaco.languages.typescript.ModuleKind.ESNext,
