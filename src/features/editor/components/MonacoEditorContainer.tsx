@@ -28,6 +28,7 @@ type ChangeEvent<T = any> = { target: T; currentTarget: T; preventDefault(): voi
 type MouseEvent<T = any> = { target: T; clientX: number; clientY: number; preventDefault(): void; stopPropagation(): void };
 type KeyboardEvent<T = any> = { key: string; code: string; metaKey: boolean; ctrlKey: boolean; altKey: boolean; shiftKey: boolean; preventDefault(): void; stopPropagation(): void };
 type FormEvent<T = any> = { preventDefault(): void; stopPropagation(): void };
+type SyntheticEvent<T = any> = { target: T; currentTarget: T; preventDefault(): void; stopPropagation(): void };
 
 declare namespace JSX {
   interface HTMLAttributes {
@@ -132,11 +133,20 @@ declare namespace React {
   function useState<T>(initialState: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
   function useEffect(effect: () => void | (() => void), deps?: any[]): void;
   function useContext<T>(context: any): T;
+  function useReducer<R extends (state: any, action: any) => any>(reducer: R, initialState: any): [any, (action: any) => void];
   function useMemo<T>(factory: () => T, deps?: any[]): T;
   function useCallback<T extends (...args: any[]) => any>(callback: T, deps?: any[]): T;
   function useRef<T>(initialValue?: T): RefObject<T>;
+  function useImperativeHandle<T, R extends T>(ref: any, init: () => R, deps?: any[]): void;
+  function useLayoutEffect(effect: () => void | (() => void), deps?: any[]): void;
   function createContext<T>(defaultValue: T): any;
   function createElement(type: any, props?: any, ...children: any[]): any;
+  function memo<T>(component: T): T;
+  function forwardRef<T, P = {}>(render: (props: P, ref: any) => any): any;
+  function lazy<T>(factory: () => Promise<{ default: T }>): any;
+  const Fragment: any;
+  const StrictMode: any;
+  const Suspense: any;
 }
 
 declare var React: typeof React;
@@ -158,6 +168,49 @@ declare var process: { env: Record<string, string | undefined> };
 declare var module: any;
 declare var exports: any;
 declare var require: (id: string) => any;
+
+declare module 'react' {
+  export = React;
+}
+
+declare module 'react-dom' {
+  export function render(element: any, container: any): void;
+  export function createRoot(container: any): any;
+}
+
+declare module 'react-dom/client' {
+  export function createRoot(container: any): any;
+}
+
+declare module 'lucide-react' {
+  export const [key: string]: any;
+}
+
+declare module 'zustand' {
+  export function create<T>(initializer: any): any;
+}
+
+declare module 'clsx' {
+  export function clsx(...args: any[]): string;
+  export default clsx;
+}
+
+declare module 'tailwind-merge' {
+  export function twMerge(...args: any[]): string;
+}
+
+declare module 'react-router-dom' {
+  export function useNavigate(): any;
+  export function useLocation(): any;
+  export function useParams(): any;
+  export function useSearchParams(): any;
+  export const Link: any;
+  export const NavLink: any;
+  export const Navigate: any;
+  export const Routes: any;
+  export const Route: any;
+  export const Outlet: any;
+}
 `;
 
 export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
@@ -198,9 +251,9 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
         allowJs: true,
       });
 
-      // Inject Global Type Declarations for RefObject, HTMLInputElement, ChangeEvent, React & DOM
-      tsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/globals.d.ts');
-      jsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/globals.d.ts');
+      // Inject Comprehensive Ambient Type Declarations for React, React-DOM, Router, Zustand, Lucide, Tailwind, and DOM
+      tsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/all-globals.d.ts');
+      jsDefaults.addExtraLib(GLOBAL_TYPES_DECLARATIONS, 'ts:filename/all-globals.d.ts');
 
       tsDefaults.setDiagnosticsOptions({
         noSemanticValidation: true,
