@@ -20,6 +20,7 @@ export interface WorkspaceState {
   createFile: (parentPath: string, fileName: string) => Promise<void>;
   createFolder: (parentPath: string, folderName: string) => Promise<void>;
   renameItem: (oldPath: string, newName: string) => Promise<void>;
+  duplicateItem: (itemPath: string) => Promise<void>;
   deleteItem: (itemPath: string) => Promise<void>;
   refreshWorkspace: () => Promise<void>;
 }

@@ -8,6 +8,7 @@ import {
   FileText,
   Trash2,
   Edit2,
+  Copy,
 } from 'lucide-react';
 import { FileNode } from '../types/workspace.types';
 import { useWorkspaceStore } from '../stores/workspaceStore';
@@ -21,7 +22,8 @@ interface FileTreeItemProps {
 }
 
 export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) => {
-  const { selectedNodeId, selectNode, toggleNodeExpanded, deleteItem, renameItem } = useWorkspaceStore();
+  const { selectedNodeId, selectNode, toggleNodeExpanded, deleteItem, renameItem, duplicateItem } =
+    useWorkspaceStore();
   const { openTab } = useEditorStore();
 
   const [isRenaming, setIsRenaming] = useState(false);
@@ -54,6 +56,11 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
       await renameItem(node.path, renameValue.trim());
     }
     setIsRenaming(false);
+  };
+
+  const handleDuplicate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await duplicateItem(node.path);
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -134,6 +141,14 @@ export const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, depth = 0 }) =
               title="Rename (F2)"
             >
               <Edit2 className="w-3 h-3" />
+            </button>
+            <button
+              type="button"
+              onClick={handleDuplicate}
+              className="p-0.5 rounded hover:bg-bg-active text-text-subtle hover:text-text-main"
+              title="Duplicate Item"
+            >
+              <Copy className="w-3 h-3" />
             </button>
             <button
               type="button"

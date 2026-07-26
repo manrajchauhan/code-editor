@@ -139,6 +139,29 @@ export async function renameFileSystemItem(oldPath: string, newName: string): Pr
   }
 }
 
+export async function copyFileSystemItem(srcPath: string): Promise<boolean> {
+  const parts = srcPath.split('/');
+  const name = parts.pop() || 'file';
+  const parent = parts.join('/');
+  const extIndex = name.lastIndexOf('.');
+  const destName =
+    extIndex !== -1
+      ? `${name.substring(0, extIndex)}_copy${name.substring(extIndex)}`
+      : `${name}_copy`;
+  const destPath = `${parent}/${destName}`;
+
+  try {
+    await invoke('copy_node', { srcPath, destPath });
+    return true;
+  } catch (error) {
+    console.info(`[FileSystemService] Duplicated mock item: ${srcPath} to ${destPath}`);
+    if (DEMO_FILE_CONTENTS[srcPath]) {
+      DEMO_FILE_CONTENTS[destPath] = `// Copy of ${name}\n` + DEMO_FILE_CONTENTS[srcPath];
+    }
+    return true;
+  }
+}
+
 export async function deleteFileSystemItem(itemPath: string): Promise<boolean> {
   try {
     await invoke('delete_node', { path: itemPath });

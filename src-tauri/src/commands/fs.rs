@@ -19,11 +19,6 @@ pub async fn read_directory_tree(path: String) -> Result<FileNode, String> {
         return Err("Directory does not exist".to_string());
     }
 
-    let name = p
-        .file_name()
-        .map(|n| n.to_string_lossy().to_string())
-        .unwrap_or_else(|| path.clone());
-
     let node = read_node_recursive(p)?;
     Ok(node)
 }
@@ -43,7 +38,6 @@ fn read_node_recursive(path: &Path) -> Result<FileNode, String> {
         if let Ok(entries) = fs::read_dir(path) {
             for entry in entries.flatten() {
                 let child_path = entry.path();
-                // Skip hidden files/dirs like .git, .DS_Store, node_modules
                 if let Some(child_name) = child_path.file_name() {
                     let s = child_name.to_string_lossy();
                     if s.starts_with('.') || s == "node_modules" || s == "target" {
@@ -88,6 +82,20 @@ pub async fn create_file_node(path: String) -> Result<(), String> {
 #[tauri::command]
 pub async fn create_dir_node(path: String) -> Result<(), String> {
     fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {}", e))
+}
+
+#[tauri::command]
+pub async fn rename_node(old_path: String, new_path: String) -> Result<(), String> {
+    fs::rename(&old_path, &new_path).map_err(|e| format!("Failed to rename item: {}", e))
+}
+
+#[tauri::command]
+pub async fn copy_node(src_path: String, dest_path: String) -> Result<(), String> {
+    let src = Path::new(&src_path);
+    if src.is_file() {
+        fs::copy(src, &dest_path).map_err(|e| format!("Failed to copy file: {}", e))?;
+    }
+    Ok(())
 }
 
 #[tauri::command]

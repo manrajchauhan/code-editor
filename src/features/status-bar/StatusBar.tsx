@@ -3,7 +3,7 @@ import { Cpu, CheckCircle2, AlertCircle, Command, Terminal, Activity } from 'luc
 import { useEditorStore } from '../editor/stores/editorStore';
 import { useSettingsStore } from '../settings/stores/settingsStore';
 import { useCommandStore } from '../command-palette/stores/commandStore';
-import { useDiagnosticsStore } from '../diagnostics/stores/diagnosticsStore';
+import { useTerminalStore } from '../terminal/stores/terminalStore';
 import { useSystemMetrics } from '../system-status/hooks/useSystemMetrics';
 import { SystemStatusModal } from '../system-status/components/SystemStatusModal';
 
@@ -11,7 +11,7 @@ export const StatusBar: React.FC = () => {
   const { getActiveTab } = useEditorStore();
   const { tabSize } = useSettingsStore();
   const { openCommandPalette } = useCommandStore();
-  const { toggleDiagnostics, isOpen: isDiagOpen } = useDiagnosticsStore();
+  const { toggleTerminal, isTerminalOpen } = useTerminalStore();
   const metrics = useSystemMetrics();
 
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
@@ -54,16 +54,16 @@ export const StatusBar: React.FC = () => {
 
           <button
             type="button"
-            onClick={toggleDiagnostics}
+            onClick={toggleTerminal}
             className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors border ${
-              isDiagOpen
+              isTerminalOpen
                 ? 'bg-bg-active text-text-main border-accent'
                 : 'bg-bg-hover text-text-muted border-border-subtle hover:text-text-main'
             }`}
-            title="Toggle Problems / Diagnostics (⌘J)"
+            title="Toggle Terminal Drawer (⌘T / ⌘J)"
           >
             <Terminal className="w-3 h-3 text-accent" />
-            <span>Problems (⌘J)</span>
+            <span>Terminal (⌘T)</span>
           </button>
 
           <button

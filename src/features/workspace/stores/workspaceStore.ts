@@ -6,6 +6,7 @@ import {
   createFileItem,
   createDirItem,
   renameFileSystemItem,
+  copyFileSystemItem,
   deleteFileSystemItem,
 } from '../../../services/fileSystemService';
 
@@ -76,6 +77,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   renameItem: async (oldPath: string, newName: string) => {
     await renameFileSystemItem(oldPath, newName);
+    await get().refreshWorkspace();
+  },
+
+  duplicateItem: async (itemPath: string) => {
+    await copyFileSystemItem(itemPath);
     await get().refreshWorkspace();
   },
 

@@ -9,25 +9,25 @@ import { CommandPaletteModal } from '../features/command-palette/components/Comm
 import { useLayoutStore } from '../stores/layoutStore';
 import { useEditorStore } from '../features/editor/stores/editorStore';
 import { useCommandStore } from '../features/command-palette/stores/commandStore';
-import { useDiagnosticsStore } from '../features/diagnostics/stores/diagnosticsStore';
+import { useTerminalStore } from '../features/terminal/stores/terminalStore';
 import { saveFile } from '../services/fileService';
 
 export const App: React.FC = () => {
   const { toggleSidebar } = useLayoutStore();
   const { getActiveTab, markTabSaved, closeTab, newUntitledTab } = useEditorStore();
   const { toggleCommandPalette } = useCommandStore();
-  const { toggleDiagnostics } = useDiagnosticsStore();
+  const { toggleTerminal } = useTerminalStore();
 
-  // Global keyboard shortcuts (⌘B, ⌘S, ⌘W, ⌘N, ⌘K, ⌘P, ⌘J)
+  // Global keyboard shortcuts (⌘B, ⌘S, ⌘W, ⌘N, ⌘K, ⌘P, ⌘T, ⌘J)
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
 
       const key = e.key.toLowerCase();
 
-      if (key === 'j') {
+      if (key === 't' || key === 'j' || key === '`') {
         e.preventDefault();
-        toggleDiagnostics();
+        toggleTerminal();
       } else if (key === 'k' || key === 'p') {
         e.preventDefault();
         toggleCommandPalette();
@@ -60,7 +60,7 @@ export const App: React.FC = () => {
   }, [
     toggleSidebar,
     toggleCommandPalette,
-    toggleDiagnostics,
+    toggleTerminal,
     getActiveTab,
     markTabSaved,
     closeTab,
@@ -78,7 +78,7 @@ export const App: React.FC = () => {
           <span className="font-semibold text-text-main tracking-tight">Code Editor</span>
         </div>
         <div className="text-[11px] text-text-subtle">
-          Phase 4 — Developer Tooling & Layout Refinements
+          Full FS CRUD & Terminal Integrated
         </div>
       </header>
 

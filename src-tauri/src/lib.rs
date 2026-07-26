@@ -9,6 +9,8 @@ pub fn run() {
             commands::fs::write_file_content,
             commands::fs::create_file_node,
             commands::fs::create_dir_node,
+            commands::fs::rename_node,
+            commands::fs::copy_node,
             commands::fs::delete_node,
         ])
         .run(tauri::generate_context!())
