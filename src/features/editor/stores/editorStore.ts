@@ -4,35 +4,9 @@ import { detectLanguage } from '../utils/languageDetector';
 
 let untitledCounter = 1;
 
-const INITIAL_WELCOME_TAB: EditorTab = {
-  id: 'welcome-tab',
-  fileName: 'welcome.ts',
-  filePath: '/welcome.ts',
-  content: `// Welcome to your Local-First Code Editor!
-// Side-by-Side Split View & Breadcrumbs Active.
-
-export function greetDeveloper(name: string): string {
-  return "Hello " + name + "! Toggle side-by-side editing with ⌘\\\\";
-}
-
-console.log(greetDeveloper('Developer'));
-`,
-  savedContent: `// Welcome to your Local-First Code Editor!
-// Side-by-Side Split View & Breadcrumbs Active.
-
-export function greetDeveloper(name: string): string {
-  return "Hello " + name + "! Toggle side-by-side editing with ⌘\\\\";
-}
-
-console.log(greetDeveloper('Developer'));
-`,
-  isDirty: false,
-  language: 'typescript',
-};
-
 export const useEditorStore = create<EditorState>((set, get) => ({
-  tabs: [INITIAL_WELCOME_TAB],
-  activeTabId: 'welcome-tab',
+  tabs: [],
+  activeTabId: null,
   secondaryTabId: null,
   isSplitView: false,
   cursorPosition: { line: 1, column: 1 },
