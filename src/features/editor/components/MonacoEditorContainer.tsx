@@ -4,6 +4,7 @@ import type { editor } from 'monaco-editor';
 import { useEditorStore } from '../stores/editorStore';
 import { useSettingsStore, FONT_FAMILY_MAP } from '../../settings/stores/settingsStore';
 import { registerSnippets } from '../snippets/snippetManager';
+import { registerMonacoThemes } from '../themes/themeManager';
 
 interface MonacoEditorContainerProps {
   tabId?: string;
@@ -51,8 +52,9 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
 
   const handleBeforeMount: BeforeMount = (monaco) => {
     registerSnippets(monaco);
+    registerMonacoThemes(monaco);
 
-    // ── Enable JSX & TSX React Support in Monaco ─────────────────────────────
+    // ── Enable Full React TSX / JSX Support in Monaco ─────────────────────
     const compilerOptions = {
       jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
       target: monaco.languages.typescript.ScriptTarget.ESNext,
@@ -108,19 +110,23 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
     });
   };
 
+  // Determine model path with .tsx extension fallback for untitled tabs
+  const modelPath = tab.filePath || (tab.fileName.includes('.') ? tab.fileName : `${tab.fileName}.tsx`);
+  const effectiveLanguage = tab.language === 'plaintext' ? 'typescript' : tab.language;
+
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#0d0e11]">
       <Editor
         key={tab.id}
         height="100%"
         width="100%"
-        path={tab.filePath || tab.id}
-        language={tab.language || 'plaintext'}
+        path={modelPath}
+        language={effectiveLanguage || 'typescript'}
         value={tab.content ?? ''}
         onChange={(val) => updateTabContent(tab.id, val ?? '')}
         beforeMount={handleBeforeMount}
         onMount={handleEditorMount}
-        theme={theme || 'vs-dark'}
+        theme={theme || 'tokyo-night'}
         options={{
           fontSize,
           fontFamily: fontCss,
@@ -144,6 +150,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
           tabCompletion: 'on',
           stickyScroll: { enabled: stickyScroll },
           renderWhitespace,
+          'semanticHighlighting.enabled': true,
         }}
       />
     </div>

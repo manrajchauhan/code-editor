@@ -1,8 +1,8 @@
 const EXTENSION_MAP: Record<string, string> = {
   ts: 'typescript',
-  tsx: 'typescriptreact',
+  tsx: 'typescript',
   js: 'javascript',
-  jsx: 'javascriptreact',
+  jsx: 'javascript',
   json: 'json',
   html: 'html',
   htm: 'html',
