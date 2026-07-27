@@ -207,43 +207,114 @@ export const CodeVisualizerModal: React.FC<CodeVisualizerModalProps> = ({ isOpen
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+      className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+      style={{ backgroundColor: 'rgba(36, 36, 36, 0.55)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl bg-bg-sidebar border border-border-strong rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] monad-surface"
+        style={{
+          backgroundColor: 'var(--color-parchment)',
+          border: '1px solid var(--color-ash)',
+          borderRadius: 'var(--radius-cards)',
+          boxShadow: 'var(--shadow-md)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
-        <div className="px-5 py-3.5 bg-bg-surface border-b border-border-subtle flex items-center justify-between">
+        {/* Modal Header — Monad parchment surface */}
+        <div
+          style={{
+            padding: '16px 24px',
+            borderBottom: '1px solid var(--color-ash)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: 'var(--color-periwinkle-mist)',
+          }}
+        >
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-accent/15 border border-accent/30 text-accent">
-              <Zap className="w-5 h-5 text-accent animate-pulse" />
+            <div
+              style={{
+                padding: 8,
+                borderRadius: 12,
+                backgroundColor: 'rgba(43, 89, 209, 0.12)',
+                border: '1px solid rgba(43, 89, 209, 0.3)',
+              }}
+            >
+              <Zap className="w-5 h-5" style={{ color: 'var(--color-lake-blue)' }} />
             </div>
-            <div className="flex flex-col">
-              <h2 className="text-sm font-bold text-text-main tracking-tight flex items-center gap-2">
-                Active Code Logic & Runtime Visualizer
-                <span className="px-2 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-400 font-mono font-semibold">
-                  STEP {currentStepIndex + 1} / {steps.length}
+            <div className="flex flex-col gap-0.5">
+              <h2
+                style={{
+                  fontFamily: 'var(--font-editorial-serif)',
+                  fontSize: 18,
+                  fontWeight: 400,
+                  letterSpacing: '-0.4px',
+                  color: 'var(--color-off-black)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                Active Code Logic Visualizer
+                <span
+                  style={{
+                    fontFamily: 'var(--font-diatype-mono)',
+                    fontSize: 10,
+                    padding: '2px 8px',
+                    borderRadius: 9999,
+                    backgroundColor: 'rgba(43, 89, 209, 0.12)',
+                    border: '1px solid rgba(43, 89, 209, 0.3)',
+                    color: 'var(--color-lake-blue)',
+                    fontWeight: 500,
+                    textTransform: 'uppercase' as const,
+                    letterSpacing: '-0.3px',
+                  }}
+                >
+                  Step {currentStepIndex + 1} / {steps.length}
                 </span>
               </h2>
-              <p className="text-[11px] text-text-subtle">Dynamic step-by-step memory & instruction stepper for your active code</p>
+              <p
+                style={{
+                  fontFamily: 'var(--font-diatype-mono)',
+                  fontSize: 11,
+                  color: 'var(--color-smoke)',
+                  letterSpacing: '-0.2px',
+                }}
+              >
+                Step-by-step memory & instruction stepper for your active code
+              </p>
             </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-bg-hover text-text-subtle hover:text-text-main transition-colors"
+            style={{ padding: 6, borderRadius: 8, color: 'var(--color-graphite)', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(206, 202, 200, 0.35)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-5 flex flex-col gap-4 overflow-y-auto">
+        {/* Modal Body — Monad parchment panel */}
+        <div
+          className="flex flex-col gap-4 overflow-y-auto"
+          style={{ padding: 24, backgroundColor: 'var(--color-parchment)' }}
+        >
           {/* Playback Control Bar */}
-          <div className="p-3 rounded-xl bg-bg-surface border border-border-subtle flex items-center justify-between">
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 16,
+              backgroundColor: 'white',
+              border: '1px solid var(--color-ash)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <div className="flex items-center gap-2">
               <button
                 type="button"

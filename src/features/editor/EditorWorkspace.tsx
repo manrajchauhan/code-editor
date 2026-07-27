@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Columns, FolderOpen, Clock, Sparkles } from 'lucide-react';
+import { Columns } from 'lucide-react';
 import { EditorTabs } from './components/EditorTabs';
 import { MonacoEditorContainer } from './components/MonacoEditorContainer';
 import { useEditorStore } from './stores/editorStore';
@@ -52,7 +52,6 @@ export const EditorWorkspace: React.FC = () => {
               <div className="flex-1 flex flex-col h-full border-r border-border-subtle overflow-hidden relative">
                 <MonacoEditorContainer tabId="primary" onSaveRequested={handleSaveActiveTab} />
               </div>
-
               {/* Secondary Pane */}
               <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                 <MonacoEditorContainer tabId="secondary" onSaveRequested={handleSaveActiveTab} />
@@ -65,91 +64,242 @@ export const EditorWorkspace: React.FC = () => {
           )}
         </div>
       ) : (
-        /* Workspace Welcome Screen Dashboard */
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none overflow-y-auto">
-          <div className="flex flex-col items-center gap-6 max-w-lg w-full">
-            {/* Atom Badge */}
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-sky-500/20 border border-accent/30 flex items-center justify-center shadow-lg">
-                <svg className="w-8 h-8 animate-[spin_12s_linear_infinite]" viewBox="0 0 24 24" fill="none">
-                  <ellipse cx="12" cy="12" rx="7" ry="3.2" stroke="#61DAFB" strokeWidth="1.5" transform="rotate(30 12 12)" />
-                  <ellipse cx="12" cy="12" rx="7" ry="3.2" stroke="#61DAFB" strokeWidth="1.5" transform="rotate(90 12 12)" />
-                  <ellipse cx="12" cy="12" rx="7" ry="3.2" stroke="#61DAFB" strokeWidth="1.5" transform="rotate(150 12 12)" />
-                  <circle cx="12" cy="12" r="1.8" fill="#61DAFB" />
-                </svg>
-              </div>
-              <div className="flex flex-col text-left">
-                <h1 className="text-xl font-bold text-text-main tracking-tight flex items-center gap-2">
-                  React Code Workspace
-                  <span className="px-2 py-0.5 text-[10px] rounded bg-accent/20 text-accent font-medium">v1.0.0</span>
-                </h1>
-                <p className="text-xs text-text-subtle">High-performance desktop IDE with Monaco & Tauri 2</p>
-              </div>
-            </div>
+        /* ──────────────────────────────────────────────────────────────
+           MONAD EDITORIAL WELCOME SCREEN
+           Warm parchment canvas · editorial serif headlines · mono body
+           ────────────────────────────────────────────────────────────── */
+        <div
+          className="flex-1 flex flex-col overflow-y-auto select-none monad-surface"
+          style={{ backgroundColor: 'var(--color-parchment)' }}
+        >
+          {/* Atmospheric gradient wash — decorative blob */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div
+              className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full monad-gradient-coral-sky opacity-30"
+              aria-hidden="true"
+            />
+          </div>
 
-            {/* Quick Action Grid */}
-            <div className="grid grid-cols-2 gap-3 w-full text-left">
+          {/* ── Hero Section ───────────────────────────────────────── */}
+          <div className="relative z-10 flex flex-col items-center justify-center text-center px-10 pt-24 pb-16 gap-8">
+            {/* Eyebrow tag */}
+            <span className="monad-tag" style={{ borderColor: 'var(--color-ash)' }}>
+              <span style={{ fontSize: 10 }}>◉</span> Local IDE · Tauri 2 + Monaco
+            </span>
+
+            {/* Editorial display headline */}
+            <h1
+              className="monad-display max-w-3xl"
+              style={{
+                fontFamily: 'var(--font-editorial-serif)',
+                fontSize: 'clamp(40px, 6vw, 80px)',
+                lineHeight: 1.15,
+                letterSpacing: '-1.6px',
+                fontWeight: 400,
+                color: 'var(--color-off-black)',
+              }}
+            >
+              Your code,<br />your machine.
+            </h1>
+
+            {/* Mono subtext */}
+            <p
+              className="max-w-md"
+              style={{
+                fontFamily: 'var(--font-diatype-mono)',
+                fontSize: 'var(--text-body-lg)',
+                lineHeight: 'var(--leading-body-lg)',
+                letterSpacing: 'var(--tracking-body-lg)',
+                color: 'var(--color-graphite)',
+              }}
+            >
+              A fast, local-first code editor with syntax highlighting, split view,
+              file tree, terminal and step-by-step logic visualizer — all offline.
+            </p>
+
+            {/* CTA Button Row */}
+            <div className="flex items-center gap-4 flex-wrap justify-center">
               <button
                 type="button"
                 onClick={newUntitledTab}
-                className="p-3.5 rounded-xl bg-bg-surface/80 border border-border-subtle hover:border-accent/50 hover:bg-bg-hover transition-all flex items-center gap-3 group shadow-sm"
+                className="monad-btn-primary"
+                style={{ fontFamily: 'var(--font-diatype-mono)' }}
               >
-                <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center text-accent group-hover:scale-105 transition-transform">
-                  <Plus className="w-5 h-5" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-text-main">New File</span>
-                  <span className="text-[10px] text-text-subtle">Shortcut ⌘N</span>
-                </div>
+                New File ▸
               </button>
-
               <button
                 type="button"
                 onClick={() => openFolder()}
-                className="p-3.5 rounded-xl bg-bg-surface/80 border border-border-subtle hover:border-accent/50 hover:bg-bg-hover transition-all flex items-center gap-3 group shadow-sm"
+                className="monad-btn-ghost"
+                style={{ fontFamily: 'var(--font-diatype-mono)' }}
               >
-                <div className="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
-                  <FolderOpen className="w-5 h-5" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-text-main">Open Folder</span>
-                  <span className="text-[10px] text-text-subtle">Browse filesystem</span>
-                </div>
+                Open Folder
               </button>
             </div>
-
-            {/* Recent Workspaces Card */}
-            {recentFolders.length > 0 && (
-              <div className="w-full p-4 rounded-xl bg-bg-surface/50 border border-border-subtle text-left flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-text-muted border-b border-border-subtle pb-2">
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-accent" /> Recent Workspaces
-                  </span>
-                  <span className="text-[10px] text-text-subtle">{recentFolders.length} saved</span>
-                </div>
-
-                <div className="flex flex-col gap-1 max-h-36 overflow-y-auto">
-                  {recentFolders.slice(0, 4).map((path) => {
-                    const name = path.split('/').pop() || path;
-                    return (
-                      <button
-                        key={path}
-                        type="button"
-                        onClick={() => openFolder(path)}
-                        className="flex items-center justify-between p-2 rounded hover:bg-bg-hover transition-colors text-left group"
-                      >
-                        <div className="flex flex-col truncate">
-                          <span className="text-xs font-medium text-text-main group-hover:text-accent truncate">{name}</span>
-                          <span className="text-[10px] text-text-subtle truncate">{path}</span>
-                        </div>
-                        <Sparkles className="w-3.5 h-3.5 text-text-subtle group-hover:text-accent opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* ── Divider ─────────────────────────────────────────────── */}
+          <div className="monad-divider mx-10" />
+
+          {/* ── Feature Cards Row ───────────────────────────────────── */}
+          <div className="relative z-10 px-10 py-12 grid grid-cols-3 gap-5 max-w-5xl mx-auto w-full">
+            {[
+              {
+                icon: '⌘',
+                title: 'Monaco Editor',
+                body: 'Full VS Code editor engine with syntax highlighting, IntelliSense and multi-language support.',
+              },
+              {
+                icon: '⧉',
+                title: 'Split View',
+                body: 'Side-by-side file editing with independent scroll. Activate with ⌘\\ shortcut.',
+                accent: true,
+              },
+              {
+                icon: '◈',
+                title: 'Logic Visualizer',
+                body: 'Step-by-step runtime stepper — arrays, loops, call stack and variable state, all animated.',
+              },
+            ].map((card) => (
+              <div
+                key={card.title}
+                className={card.accent ? 'monad-card-periwinkle' : 'monad-card'}
+                style={{ position: 'relative', overflow: 'hidden' }}
+              >
+                {card.accent && (
+                  /* Gradient wash inside periwinkle card */
+                  <div
+                    className="absolute top-0 right-0 w-40 h-40 pointer-events-none"
+                    style={{
+                      background: 'radial-gradient(ellipse at 80% 20%, rgba(167, 252, 205, 0.6), rgba(160, 181, 235, 0.4), transparent)',
+                      filter: 'blur(30px)',
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
+                <div
+                  style={{
+                    fontSize: 20,
+                    color: 'var(--color-off-black)',
+                    marginBottom: 16,
+                    fontFamily: 'var(--font-diatype-mono)',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  {card.icon}
+                </div>
+                <h3
+                  className="monad-subheading"
+                  style={{
+                    fontFamily: 'var(--font-editorial-serif)',
+                    fontSize: 'var(--text-subheading)',
+                    lineHeight: 'var(--leading-subheading)',
+                    letterSpacing: 'var(--tracking-subheading)',
+                    fontWeight: 400,
+                    color: 'var(--color-off-black)',
+                    marginBottom: 12,
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  {card.title}
+                </h3>
+                <p
+                  className="monad-body"
+                  style={{
+                    fontFamily: 'var(--font-diatype-mono)',
+                    fontSize: 'var(--text-body)',
+                    lineHeight: 'var(--leading-body)',
+                    letterSpacing: 'var(--tracking-body)',
+                    color: 'var(--color-graphite)',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  {card.body}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Recent Workspaces ───────────────────────────────────── */}
+          {recentFolders.length > 0 && (
+            <div className="relative z-10 px-10 pb-16 max-w-5xl mx-auto w-full">
+              <div className="monad-divider mb-8" />
+              <div
+                style={{
+                  fontFamily: 'var(--font-diatype-mono)',
+                  fontSize: 'var(--text-caption)',
+                  letterSpacing: 'var(--tracking-caption)',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-smoke)',
+                  marginBottom: 16,
+                }}
+              >
+                Recent Workspaces
+              </div>
+              <div className="flex flex-col gap-1">
+                {recentFolders.slice(0, 5).map((path) => {
+                  const name = path.split('/').pop() || path;
+                  return (
+                    <button
+                      key={path}
+                      type="button"
+                      onClick={() => openFolder(path)}
+                      className="flex items-center justify-between py-3 px-4 rounded-xl transition-colors text-left group"
+                      style={{
+                        border: '1px solid transparent',
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-ash)';
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(206, 202, 200, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <div className="flex flex-col">
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-diatype-mono)',
+                            fontSize: 'var(--text-body-sm)',
+                            letterSpacing: 'var(--tracking-body-sm)',
+                            fontWeight: 500,
+                            color: 'var(--color-off-black)',
+                          }}
+                        >
+                          {name}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-diatype-mono)',
+                            fontSize: 'var(--text-caption)',
+                            letterSpacing: 'var(--tracking-caption)',
+                            color: 'var(--color-smoke)',
+                          }}
+                        >
+                          {path}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-diatype-mono)',
+                          fontSize: 'var(--text-caption)',
+                          color: 'var(--color-lake-blue)',
+                          textTransform: 'uppercase',
+                          letterSpacing: 'var(--tracking-caption)',
+                        }}
+                      >
+                        Open →
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </main>
