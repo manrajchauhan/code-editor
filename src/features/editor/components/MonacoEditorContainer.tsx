@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import Editor, { OnMount, BeforeMount } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { useEditorStore } from '../stores/editorStore';
-import { useSettingsStore } from '../../settings/stores/settingsStore';
+import { useSettingsStore, FONT_FAMILY_MAP } from '../../settings/stores/settingsStore';
 import { registerSnippets } from '../snippets/snippetManager';
 
 interface MonacoEditorContainerProps {
@@ -16,7 +16,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
 }) => {
   const { getActiveTab, getSecondaryTab, updateTabContent, setCursorPosition } = useEditorStore();
   const {
-    theme, fontSize, tabSize, wordWrap, minimap,
+    theme, fontFamily, fontSize, tabSize, wordWrap, minimap,
     stickyScroll, lineNumbers, cursorStyle, fontLigatures,
     renderWhitespace, smoothScrolling,
   } = useSettingsStore();
@@ -24,6 +24,8 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const activeTab = tabId ? (tabId === 'secondary' ? getSecondaryTab() : getActiveTab()) : getActiveTab();
   const tab = activeTab;
+
+  const fontCss = FONT_FAMILY_MAP[fontFamily]?.css || FONT_FAMILY_MAP['jetbrains-mono'].css;
 
   // Window level ⌘S Save hotkey fallback listener
   useEffect(() => {
@@ -92,7 +94,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
         theme={theme || 'vs-dark'}
         options={{
           fontSize,
-          fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
+          fontFamily: fontCss,
           fontLigatures,
           lineNumbers,
           minimap: { enabled: minimap, side: 'right' },

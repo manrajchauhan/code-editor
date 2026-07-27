@@ -1,13 +1,20 @@
 import React from 'react';
-import { Settings, Sliders, Type, LayoutGrid, Eye, AlignLeft, MousePointer, Minus, Columns } from 'lucide-react';
-import { useSettingsStore, EditorTheme, LineNumbersMode, CursorStyle } from '../stores/settingsStore';
+import { Settings, Sliders, Type, LayoutGrid, Eye, AlignLeft, MousePointer, Minus, Columns, CaseSensitive } from 'lucide-react';
+import {
+  useSettingsStore,
+  EditorTheme,
+  LineNumbersMode,
+  CursorStyle,
+  FontFamilyOption,
+  FONT_FAMILY_MAP,
+} from '../stores/settingsStore';
 
 export const SettingsPane: React.FC = () => {
   const {
-    theme, fontSize, tabSize, wordWrap, minimap,
+    theme, fontFamily, fontSize, tabSize, wordWrap, minimap,
     stickyScroll, lineNumbers, cursorStyle, fontLigatures,
     renderWhitespace, smoothScrolling,
-    setTheme, setFontSize, setTabSize, setWordWrap, setMinimap,
+    setTheme, setFontFamily, setFontSize, setTabSize, setWordWrap, setMinimap,
     setStickyScroll, setLineNumbers, setCursorStyle, setFontLigatures,
     setRenderWhitespace, setSmoothScrolling,
   } = useSettingsStore();
@@ -46,6 +53,24 @@ export const SettingsPane: React.FC = () => {
           <option value="vitesse-dark">Vitesse Dark</option>
           <option value="vs-dark">VS Dark</option>
           <option value="light">VS Light</option>
+        </select>
+      </div>
+
+      {/* Font Family Selector */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[10px] font-medium text-text-subtle flex items-center gap-1.5 uppercase tracking-wider">
+          <CaseSensitive className="w-3.5 h-3.5 text-accent" /> Font Family
+        </label>
+        <select
+          value={fontFamily}
+          onChange={(e) => setFontFamily(e.target.value as FontFamilyOption)}
+          className="bg-bg-surface border border-border-subtle rounded px-2 py-1.5 text-text-main text-xs outline-none focus:border-accent font-mono"
+        >
+          {Object.entries(FONT_FAMILY_MAP).map(([key, val]) => (
+            <option key={key} value={key}>
+              {val.label}
+            </option>
+          ))}
         </select>
       </div>
 
