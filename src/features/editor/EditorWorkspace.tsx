@@ -1,5 +1,5 @@
 import React from 'react';
-import { Columns, Code2 } from 'lucide-react';
+import { Columns } from 'lucide-react';
 import { EditorTabs } from './components/EditorTabs';
 import { MonacoEditorContainer } from './components/MonacoEditorContainer';
 import { useEditorStore } from './stores/editorStore';
@@ -64,44 +64,41 @@ export const EditorWorkspace: React.FC = () => {
           )}
         </div>
       ) : (
-        /* ── ULTRA-MINIMAL BORDERLESS WELCOME WATERMARK ──────────────── */
+        /* ── MINIMAL WATERMARK WELCOME SCREEN ────────────────────────── */
         <div className="flex-1 flex flex-col items-center justify-center select-none bg-bg-main">
-          <div className="flex flex-col items-center gap-8 max-w-sm text-center">
-            {/* Logo in Middle */}
-            <div className="relative flex items-center justify-center">
-              <div className="absolute w-24 h-24 rounded-full bg-accent/10 blur-2xl pointer-events-none" />
-              <div className="w-16 h-16 rounded-2xl bg-bg-surface flex items-center justify-center text-accent shadow-sm">
-                <Code2 className="w-8 h-8 text-accent stroke-[1.5]" />
-              </div>
-            </div>
+          <div className="flex flex-col items-center gap-10">
+            {/* Logo Name Only */}
+            <h1 className="text-2xl font-bold tracking-wider text-text-main font-mono opacity-90">
+              Code Editor
+            </h1>
 
-            {/* 3 Clean Shortcuts without borders */}
-            <div className="flex flex-col gap-3.5 w-full text-xs font-mono">
+            {/* 3 Clean Shortcuts with Generous Spacing */}
+            <div className="flex flex-col gap-4 w-72 text-xs font-mono">
               <button
                 type="button"
                 onClick={openCommandPalette}
-                className="flex items-center justify-between text-text-muted hover:text-text-main transition-colors px-2 py-1"
+                className="flex items-center justify-between text-text-muted hover:text-text-main transition-colors px-1 py-0.5"
               >
                 <span>Show All Commands</span>
-                <span className="text-text-subtle font-mono">⌘K</span>
+                <span className="text-text-subtle font-mono ml-8">⌘K</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => openFolder()}
-                className="flex items-center justify-between text-text-muted hover:text-text-main transition-colors px-2 py-1"
+                className="flex items-center justify-between text-text-muted hover:text-text-main transition-colors px-1 py-0.5"
               >
                 <span>Open Folder</span>
-                <span className="text-text-subtle font-mono">⌘O</span>
+                <span className="text-text-subtle font-mono ml-8">⌘O</span>
               </button>
 
               <button
                 type="button"
                 onClick={newUntitledTab}
-                className="flex items-center justify-between text-text-muted hover:text-text-main transition-colors px-2 py-1"
+                className="flex items-center justify-between text-text-muted hover:text-text-main transition-colors px-1 py-0.5"
               >
                 <span>New File</span>
-                <span className="text-text-subtle font-mono">⌘N</span>
+                <span className="text-text-subtle font-mono ml-8">⌘N</span>
               </button>
             </div>
           </div>
