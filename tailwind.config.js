@@ -27,8 +27,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'SF Mono', 'monospace'],
+        sans: ['var(--app-font-family)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['var(--app-font-family)', 'JetBrains Mono', 'Fira Code', 'SF Mono', 'monospace'],
       },
     },
   },

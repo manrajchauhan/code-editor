@@ -23,10 +23,11 @@ export const App: React.FC = () => {
   const { toggleTerminal } = useTerminalStore();
   const [isDevModalOpen, setIsDevModalOpen] = useState(false);
 
-  // Sync font family across entire application document
+  // Sync font family across entire application document & body
   useEffect(() => {
     const fontCss = FONT_FAMILY_MAP[fontFamily]?.css || FONT_FAMILY_MAP['jetbrains-mono'].css;
     document.documentElement.style.setProperty('--app-font-family', fontCss);
+    document.body.style.fontFamily = fontCss;
   }, [fontFamily]);
 
   // Global keyboard shortcuts (⌘B, ⌘S, ⌘W, ⌘N, ⌘K, ⌘P, ⌘T, ⌘J, ⌘\)

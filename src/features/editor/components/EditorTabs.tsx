@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Edit2, Play, Cpu } from 'lucide-react';
+import { X, Plus, Play, Cpu } from 'lucide-react';
 import { useEditorStore } from '../stores/editorStore';
 import { useWorkspaceStore } from '../../workspace/stores/workspaceStore';
 import { useTerminalStore } from '../../terminal/stores/terminalStore';
@@ -143,14 +143,6 @@ export const EditorTabs: React.FC = () => {
                           title="Unsaved changes"
                         />
                       )}
-                      <button
-                        type="button"
-                        onClick={(e) => handleStartRename(tab.id, tab.fileName, e)}
-                        className="p-0.5 rounded hover:bg-bg-active text-text-subtle hover:text-text-main opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Rename File"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </button>
                       <button
                         type="button"
                         onClick={(e) => {
