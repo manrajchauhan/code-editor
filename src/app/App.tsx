@@ -10,6 +10,7 @@ import { DeveloperModal } from '../components/ui/DeveloperModal';
 import { TopMenuBar } from '../components/ui/TopMenuBar';
 import { useLayoutStore } from '../stores/layoutStore';
 import { useEditorStore } from '../features/editor/stores/editorStore';
+import { useSettingsStore, FONT_FAMILY_MAP } from '../features/settings/stores/settingsStore';
 import { useCommandStore } from '../features/command-palette/stores/commandStore';
 import { useTerminalStore } from '../features/terminal/stores/terminalStore';
 import { saveFile } from '../services/fileService';
@@ -17,9 +18,16 @@ import { saveFile } from '../services/fileService';
 export const App: React.FC = () => {
   const { toggleSidebar } = useLayoutStore();
   const { getActiveTab, markTabSaved, closeTab, newUntitledTab, toggleSplitView } = useEditorStore();
+  const { fontFamily } = useSettingsStore();
   const { toggleCommandPalette } = useCommandStore();
   const { toggleTerminal } = useTerminalStore();
   const [isDevModalOpen, setIsDevModalOpen] = useState(false);
+
+  // Sync font family across entire application document
+  useEffect(() => {
+    const fontCss = FONT_FAMILY_MAP[fontFamily]?.css || FONT_FAMILY_MAP['jetbrains-mono'].css;
+    document.documentElement.style.setProperty('--app-font-family', fontCss);
+  }, [fontFamily]);
 
   // Global keyboard shortcuts (⌘B, ⌘S, ⌘W, ⌘N, ⌘K, ⌘P, ⌘T, ⌘J, ⌘\)
   useEffect(() => {
@@ -75,7 +83,7 @@ export const App: React.FC = () => {
   ]);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-bg-main font-sans">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-bg-main">
       {/* Command Palette & Developer Modals */}
       <CommandPaletteModal />
       <DeveloperModal isOpen={isDevModalOpen} onClose={() => setIsDevModalOpen(false)} />

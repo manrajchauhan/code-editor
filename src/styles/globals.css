@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --app-font-family: 'JetBrains Mono', -apple-system, BlinkMacSystemFont, sans-serif;
+
   --bg-main: #0d0e11;
   --bg-sidebar: #13151a;
   --bg-surface: #181b22;
@@ -20,12 +22,12 @@
   --text-subtle: #4b5563;
 }
 
-body {
+body, button, input, select, textarea {
   margin: 0;
   padding: 0;
   background-color: var(--bg-main);
   color: var(--text-main);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--app-font-family);
   user-select: none;
   -webkit-user-select: none;
 }
