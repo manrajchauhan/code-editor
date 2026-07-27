@@ -82,22 +82,31 @@ export const EditorTabs: React.FC = () => {
         code={activeTab?.content || ''}
       />
 
-      <div className="h-9 bg-bg-sidebar border-b border-border-subtle flex items-center justify-between px-2 gap-2 select-none shrink-0 w-full">
-        <div className="flex items-center gap-1 overflow-x-auto flex-1">
+      <div className="h-10 bg-bg-sidebar border-b border-border-subtle flex items-center justify-between px-2 gap-2 select-none shrink-0 w-full">
+        <div className="flex items-center gap-0.5 overflow-x-auto flex-1">
           {tabs.map((tab) => {
             const isActive = tab.id === activeTabId;
             const isEditing = editingTabId === tab.id;
+            const langBadge = tab.language ? tab.language.slice(0, 3).toUpperCase() : null;
 
             return (
               <div
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 onDoubleClick={(e) => handleStartRename(tab.id, tab.fileName, e)}
-                className={`group relative flex items-center gap-2 px-3 py-1.5 cursor-pointer text-xs transition-colors rounded-t border-r border-border-subtle min-w-[130px] max-w-[210px] justify-between ${
+                className={`group relative flex items-center gap-2 px-3 py-1.5 cursor-pointer text-xs transition-all rounded-t min-w-[130px] max-w-[210px] justify-between ${
                   isActive
-                    ? 'bg-bg-main text-text-main font-medium border-t-2 border-t-accent'
+                    ? 'bg-bg-main text-text-main font-medium'
                     : 'bg-bg-surface/40 text-text-muted hover:bg-bg-hover hover:text-text-main'
                 }`}
+                style={isActive ? {
+                  borderTop: '2px solid transparent',
+                  borderImage: 'linear-gradient(90deg, #6366f1, #8b5cf6) 1',
+                  borderRight: '1px solid var(--border-subtle)',
+                } : {
+                  borderTop: '2px solid transparent',
+                  borderRight: '1px solid var(--border-subtle)',
+                }}
                 title="Double-click tab to rename file"
               >
                 {isEditing ? (
@@ -120,6 +129,11 @@ export const EditorTabs: React.FC = () => {
                     <div className="flex items-center gap-1.5 truncate">
                       <FileIcon fileName={tab.fileName} className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{tab.fileName}</span>
+                      {isActive && langBadge && (
+                        <span className="text-[8px] font-mono font-bold px-1 py-0 rounded bg-accent/15 text-accent/80 shrink-0 border border-accent/20">
+                          {langBadge}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">

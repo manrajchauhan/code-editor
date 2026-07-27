@@ -15,7 +15,11 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
   onSaveRequested,
 }) => {
   const { getActiveTab, getSecondaryTab, updateTabContent, setCursorPosition } = useEditorStore();
-  const { theme, fontSize, tabSize, wordWrap, minimap } = useSettingsStore();
+  const {
+    theme, fontSize, tabSize, wordWrap, minimap,
+    stickyScroll, lineNumbers, cursorStyle, fontLigatures,
+    renderWhitespace, smoothScrolling,
+  } = useSettingsStore();
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const activeTab = tabId ? (tabId === 'secondary' ? getSecondaryTab() : getActiveTab()) : getActiveTab();
@@ -89,7 +93,8 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
         options={{
           fontSize,
           fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace",
-          lineNumbers: 'on',
+          fontLigatures,
+          lineNumbers,
           minimap: { enabled: minimap, side: 'right' },
           scrollBeyondLastLine: false,
           automaticLayout: true,
@@ -98,13 +103,16 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
           contextmenu: true,
           copyWithSyntaxHighlighting: true,
           padding: { top: 10, bottom: 10 },
-          smoothScrolling: true,
+          smoothScrolling,
           cursorBlinking: 'smooth',
           cursorSmoothCaretAnimation: 'on',
+          cursorStyle,
           renderLineHighlight: 'all',
           lineHeight: Math.round(fontSize * 1.5),
           snippetSuggestions: 'top',
           tabCompletion: 'on',
+          stickyScroll: { enabled: stickyScroll },
+          renderWhitespace,
         }}
       />
     </div>

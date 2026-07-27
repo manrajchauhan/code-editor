@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Cpu, CheckCircle2, AlertCircle, Command, Terminal, Activity } from 'lucide-react';
+import { Cpu, CheckCircle2, AlertCircle, Command, Terminal, Activity, GitBranch } from 'lucide-react';
 import { useEditorStore } from '../editor/stores/editorStore';
 import { useSettingsStore } from '../settings/stores/settingsStore';
 import { useCommandStore } from '../command-palette/stores/commandStore';
 import { useTerminalStore } from '../terminal/stores/terminalStore';
 import { useSystemMetrics } from '../system-status/hooks/useSystemMetrics';
+import { useGitStore } from '../git/stores/gitStore';
+import { useLayoutStore } from '../../stores/layoutStore';
 import { SystemStatusModal } from '../system-status/components/SystemStatusModal';
 import { PerformanceModal } from '../../components/ui/PerformanceModal';
 
@@ -14,9 +16,30 @@ export const StatusBar: React.FC = () => {
   const { openCommandPalette } = useCommandStore();
   const { toggleTerminal, isTerminalOpen } = useTerminalStore();
   const metrics = useSystemMetrics();
+  const { branch, modifiedFiles } = useGitStore();
+  const { setActiveView } = useLayoutStore();
 
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const activeTab = getActiveTab();
+
+  const Chip = ({ children, onClick, active, className = '' }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    active?: boolean;
+    className?: string;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] border transition-colors font-mono ${
+        active
+          ? 'bg-accent/15 text-accent border-accent/30 hover:bg-accent/25'
+          : 'bg-bg-hover/50 text-text-muted border-border-subtle hover:text-text-main hover:bg-bg-hover'
+      } ${className}`}
+    >
+      {children}
+    </button>
+  );
 
   return (
     <>
@@ -24,67 +47,81 @@ export const StatusBar: React.FC = () => {
       <PerformanceModal />
 
       <footer
-        className="h-6 bg-bg-surface border-t border-border-subtle px-3 flex items-center justify-between text-[11px] text-text-muted select-none z-20 shrink-0"
+        className="h-7 bg-bg-surface border-t border-border-subtle px-2 flex items-center justify-between text-[10px] text-text-muted select-none z-20 shrink-0 gap-2"
         aria-label="Status Bar"
       >
-        <div className="flex items-center gap-3">
-          {activeTab?.isDirty ? (
-            <div className="flex items-center gap-1 text-amber-400 font-medium">
-              <AlertCircle className="w-3 h-3" />
-              <span>Unsaved Changes</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 text-emerald-400">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>Saved</span>
-            </div>
+        {/* Left */}
+        <div className="flex items-center gap-1.5">
+          {/* Git branch */}
+          {branch && (
+            <Chip
+              onClick={() => setActiveView('git')}
+              className="!rounded-sm"
+            >
+              <GitBranch className="w-3 h-3 text-accent" />
+              <span>{branch}</span>
+              {modifiedFiles.length > 0 && (
+                <span className="text-amber-400">{modifiedFiles.length}↑</span>
+              )}
+            </Chip>
           )}
-          <span className="text-border-strong">|</span>
-          <span className="truncate max-w-[200px]">{activeTab ? activeTab.fileName : 'No file'}</span>
+
+          {/* Save status */}
+          {activeTab?.isDirty ? (
+            <Chip className="!border-amber-500/30">
+              <AlertCircle className="w-3 h-3 text-amber-400" />
+              <span className="text-amber-400">Unsaved</span>
+            </Chip>
+          ) : (
+            <Chip className="!border-emerald-500/20">
+              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <span className="text-emerald-400">Saved</span>
+            </Chip>
+          )}
+
+          {/* File name */}
+          {activeTab && (
+            <span className="text-text-subtle truncate max-w-[160px] font-mono">
+              {activeTab.fileName}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsStatusModalOpen(true)}
-            className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors"
-            title="Click to view full System Running Status"
-          >
-            <Activity className="w-3 h-3 animate-pulse" />
-            <span className="font-mono text-[10px]">RAM: {metrics.memoryUsedMB}MB</span>
-          </button>
+        {/* Right */}
+        <div className="flex items-center gap-1.5">
+          {/* RAM */}
+          <Chip onClick={() => setIsStatusModalOpen(true)}>
+            <Activity className="w-3 h-3 text-accent animate-pulse" />
+            <span>RAM: {metrics.memoryUsedMB}MB</span>
+          </Chip>
 
-          <button
-            type="button"
-            onClick={toggleTerminal}
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors border ${
-              isTerminalOpen
-                ? 'bg-bg-active text-text-main border-accent'
-                : 'bg-bg-hover text-text-muted border-border-subtle hover:text-text-main'
-            }`}
-            title="Toggle Terminal Drawer (⌘T / ⌘J)"
-          >
+          {/* Terminal */}
+          <Chip onClick={toggleTerminal} active={isTerminalOpen}>
             <Terminal className="w-3 h-3 text-accent" />
-            <span>Terminal (⌘T)</span>
-          </button>
+            <span>Terminal</span>
+          </Chip>
 
-          <button
-            type="button"
-            onClick={openCommandPalette}
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-bg-hover text-text-muted hover:text-text-main transition-colors border border-border-subtle"
-            title="Command Palette (⌘K / ⌘P)"
-          >
+          {/* Command palette */}
+          <Chip onClick={openCommandPalette}>
             <Command className="w-3 h-3 text-accent" />
-            <span className="font-mono text-[10px]">⌘K</span>
-          </button>
+            <span>⌘K</span>
+          </Chip>
 
-          <span className="text-border-strong">|</span>
-          <span className="font-mono">
-            Ln {cursorPosition.line}, Col {cursorPosition.column}
-          </span>
-          <span>Spaces: {tabSize}</span>
+          <span className="text-border-strong mx-0.5">|</span>
+
+          {/* Cursor position */}
+          <span className="font-mono">Ln {cursorPosition.line} Col {cursorPosition.column}</span>
+          <span>Sp:{tabSize}</span>
           <span>UTF-8</span>
-          <span className="uppercase font-mono">{activeTab ? activeTab.language : 'Plain Text'}</span>
+
+          {/* Language */}
+          {activeTab && (
+            <span className="uppercase font-mono px-1.5 py-0.5 rounded bg-accent/10 border border-accent/20 text-accent text-[9px]">
+              {activeTab.language || 'text'}
+            </span>
+          )}
+
+          {/* Tauri badge */}
           <div className="flex items-center gap-1 text-text-subtle">
             <Cpu className="w-3 h-3 text-accent" />
             <span>Tauri 2</span>

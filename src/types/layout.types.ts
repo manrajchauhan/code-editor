@@ -1,4 +1,4 @@
-export type ActivityView = 'explorer' | 'search' | 'settings';
+export type ActivityView = 'explorer' | 'search' | 'settings' | 'git' | 'snippets' | 'extensions' | 'debug';
 
 export interface LayoutState {
   activeView: ActivityView;
