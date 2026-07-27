@@ -54,7 +54,7 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
     registerSnippets(monaco);
     registerMonacoThemes(monaco);
 
-    // ── Enable Full React TSX / JSX Support in Monaco ─────────────────────
+    // ── Enable Full React TSX / JSX Compiler Options in Monaco ─────────────
     const compilerOptions = {
       jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
       target: monaco.languages.typescript.ScriptTarget.ESNext,
@@ -71,16 +71,77 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions);
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions);
 
-    // Ignore missing ambient module / type definition squiggles in standalone files
+    // ── Inject Ambient React & react/jsx-runtime Types for TSX ───────────────
+    const reactTypes = `
+      declare module 'react/jsx-runtime' {
+        export namespace JSX {
+          interface IntrinsicElements {
+            [elemName: string]: any;
+          }
+          type Element = any;
+        }
+        export function jsx(type: any, props: any, key?: any): any;
+        export function jsxs(type: any, props: any, key?: any): any;
+        export function Fragment(): any;
+      }
+      declare module 'react/jsx-dev-runtime' {
+        export namespace JSX {
+          interface IntrinsicElements {
+            [elemName: string]: any;
+          }
+          type Element = any;
+        }
+        export function jsxDEV(type: any, props: any, key?: any, isStatic?: boolean, source?: any, self?: any): any;
+        export function Fragment(): any;
+      }
+      declare module 'react' {
+        export = React;
+      }
+      declare namespace React {
+        type ReactNode = any;
+        type ComponentType<P = {}> = any;
+        type FC<P = {}> = (props: P) => any;
+        type FunctionComponent<P = {}> = (props: P) => any;
+        type CSSProperties = Record<string, any>;
+        type MouseEvent<T = Element> = any;
+        type FormEvent<T = Element> = any;
+        type ChangeEvent<T = Element> = any;
+        type KeyboardEvent<T = Element> = any;
+        type FocusEvent<T = Element> = any;
+        type SyntheticEvent<T = Element> = any;
+        type HTMLAttributes<T> = any;
+        function useState<T>(initialState: T | (() => T)): [T, (newState: T | ((prevState: T) => T)) => void];
+        function useEffect(effect: () => void | (() => void), deps?: any[]): void;
+        function useCallback<T extends (...args: any[]) => any>(callback: T, deps: any[]): T;
+        function useMemo<T>(factory: () => T, deps: any[]): T;
+        function useRef<T>(initialValue: T): { current: T };
+        function useContext<T>(context: any): T;
+        function useReducer<R extends (...args: any[]) => any>(reducer: R, initialState: any): [any, any];
+        function createContext<T>(defaultValue: T): any;
+      }
+      declare namespace JSX {
+        interface IntrinsicElements {
+          [elemName: string]: any;
+        }
+        type Element = any;
+      }
+      declare const React: any;
+    `;
+
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(reactTypes, 'ts:filename/react.d.ts');
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(reactTypes, 'js:filename/react.d.ts');
+
+    // Ignore missing ambient module & jsx-runtime diagnostic squiggles in standalone files
+    const ignoredDiagnostics = [2307, 2304, 2503, 2552, 2792, 6142, 17004, 7026, 7016, 2686, 2339];
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: false,
       noSyntaxValidation: false,
-      diagnosticCodesToIgnore: [2307, 2304, 2792, 17004, 7026, 2686],
+      diagnosticCodesToIgnore: ignoredDiagnostics,
     });
     monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: false,
       noSyntaxValidation: false,
-      diagnosticCodesToIgnore: [2307, 2304, 2792, 17004, 7026, 2686],
+      diagnosticCodesToIgnore: ignoredDiagnostics,
     });
   };
 
