@@ -51,6 +51,35 @@ export const MonacoEditorContainer: React.FC<MonacoEditorContainerProps> = ({
 
   const handleBeforeMount: BeforeMount = (monaco) => {
     registerSnippets(monaco);
+
+    // ── Enable JSX & TSX React Support in Monaco ─────────────────────────────
+    const compilerOptions = {
+      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+      target: monaco.languages.typescript.ScriptTarget.ESNext,
+      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      module: monaco.languages.typescript.ModuleKind.ESNext,
+      allowJs: true,
+      checkJs: false,
+      allowSyntheticDefaultImports: true,
+      esModuleInterop: true,
+      noEmit: true,
+      skipLibCheck: true,
+    };
+
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions);
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions);
+
+    // Ignore missing ambient module / type definition squiggles in standalone files
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+      diagnosticCodesToIgnore: [2307, 2304, 2792, 17004, 7026, 2686],
+    });
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+      diagnosticCodesToIgnore: [2307, 2304, 2792, 17004, 7026, 2686],
+    });
   };
 
   const handleEditorMount: OnMount = (editorInstance, monaco) => {

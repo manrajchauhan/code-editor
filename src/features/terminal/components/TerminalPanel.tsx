@@ -9,7 +9,7 @@ import { useSettingsStore, FONT_FAMILY_MAP } from '../../settings/stores/setting
 import { executeShellCommand, readDirectoryTree } from '../../../services/fileSystemService';
 import { useGitStore } from '../../git/stores/gitStore';
 
-// ─── FULLY LOADED COMMAND AUTO-SUGGESTION DICTIONARY ─────────────────────
+
 const COMMAND_DICTIONARY: Record<string, string[]> = {
   git: [
     'status', 'add .', 'add', 'commit -m "feat: "', 'commit -m "fix: "', 'push origin main',
