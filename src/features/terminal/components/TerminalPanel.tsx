@@ -9,11 +9,48 @@ import { useSettingsStore, FONT_FAMILY_MAP } from '../../settings/stores/setting
 import { executeShellCommand, readDirectoryTree } from '../../../services/fileSystemService';
 import { useGitStore } from '../../git/stores/gitStore';
 
+// ─── FULLY LOADED COMMAND AUTO-SUGGESTION DICTIONARY ─────────────────────
+const COMMAND_DICTIONARY: Record<string, string[]> = {
+  git: [
+    'status', 'add .', 'add', 'commit -m "feat: "', 'commit -m "fix: "', 'push origin main',
+    'push', 'pull', 'checkout -b', 'checkout main', 'branch -a', 'diff', 'log --oneline -n 10',
+    'stash', 'stash pop', 'merge', 'rebase', 'init', 'remote -v', 'reset --hard HEAD', 'clean -fd',
+  ],
+  npm: [
+    'run dev', 'run build', 'run test', 'start', 'install', 'install -D', 'uninstall',
+    'init -y', 'update', 'publish', 'run tauri dev', 'run tauri build',
+  ],
+  npx: ['tsx', 'create-vite', 'create-next-app', 'tailwindcss', 'prettier --write .'],
+  docker: ['ps', 'run -it', 'build -t', 'stop', 'start', 'compose up', 'compose down', 'images', 'exec -it'],
+  cargo: ['run', 'build', 'check', 'test', 'new', 'init'],
+  go: ['run .', 'build', 'test ./...', 'mod init', 'get'],
+  python: ['main.py', 'app.py', '-m venv venv', '-m pip install -r requirements.txt'],
+  python3: ['main.py', 'app.py', '-m venv venv', '-m pip install -r requirements.txt'],
+  pip: ['install', 'install -r requirements.txt', 'list', 'freeze'],
+  node: ['index.js', 'app.js', 'server.js', 'dist/main.js'],
+  cd: ['..', '~', 'src', 'public', 'node_modules', 'dist'],
+  ls: ['-la', '-l', '-a', '-lh'],
+  rm: ['-rf', '-r'],
+  mkdir: ['-p'],
+  cat: ['package.json', 'README.md', 'tsconfig.json'],
+  code: ['.'],
+};
+
+const COMMON_TOP_LEVEL_COMMANDS = [
+  'git status', 'git add .', 'git commit -m "feat: "', 'git push origin main', 'git pull', 'git checkout',
+  'npm run dev', 'npm run build', 'npm install', 'npm start', 'npm test', 'npm run tauri dev',
+  'npx tsx', 'npx create-vite',
+  'clear', 'ls -la', 'pwd', 'mkdir -p', 'touch', 'rm -rf',
+  'node index.js', 'python3 main.py', 'cargo run', 'go run .',
+];
+
 export const TerminalPanel: React.FC = () => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
+
   const inputBufferRef = useRef<string>('');
+  const activeGhostSuggestionRef = useRef<string>('');
   const historyRef = useRef<string[]>([]);
   const historyIndexRef = useRef<number>(-1);
   const activePathRef = useRef<string>('');
@@ -25,10 +62,67 @@ export const TerminalPanel: React.FC = () => {
 
   const fontCss = FONT_FAMILY_MAP[fontFamily]?.css || FONT_FAMILY_MAP['jetbrains-mono'].css;
 
-  // Initialize Active Directory Path
   useEffect(() => {
     activePathRef.current = currentFolderPath || '/Volumes/Personal Space/Cross Platform Apps/Demo';
   }, [currentFolderPath]);
+
+  // ─── Find Best Auto-Suggestion Match ───────────────────────────────────────
+  const getAutoSuggestion = (input: string): string => {
+    if (!input || input.trim().length === 0) return '';
+    const trimmed = input.trimStart();
+
+    // 1. Check user command history (recent first)
+    for (let i = historyRef.current.length - 1; i >= 0; i--) {
+      const h = historyRef.current[i];
+      if (h.startsWith(input) && h.length > input.length) {
+        return h;
+      }
+    }
+
+    // 2. Check subcommand dictionary (e.g. `git st...` -> `git status`)
+    const parts = trimmed.split(' ');
+    const firstWord = parts[0].toLowerCase();
+    if (parts.length > 1 && COMMAND_DICTIONARY[firstWord]) {
+      const sub = parts.slice(1).join(' ');
+      const match = COMMAND_DICTIONARY[firstWord].find((s) => s.toLowerCase().startsWith(sub.toLowerCase()));
+      if (match) {
+        return `${parts[0]} ${match}`;
+      }
+    }
+
+    // 3. Check top-level dictionary
+    if (parts.length === 1 && COMMAND_DICTIONARY[firstWord]) {
+      return `${firstWord} ${COMMAND_DICTIONARY[firstWord][0]}`;
+    }
+
+    // 4. Check common top-level commands
+    const commonMatch = COMMON_TOP_LEVEL_COMMANDS.find((c) => c.toLowerCase().startsWith(trimmed.toLowerCase()));
+    if (commonMatch && commonMatch.length > trimmed.length) {
+      return commonMatch;
+    }
+
+    return '';
+  };
+
+  // ─── Render Ghost Text Suggestion (Zsh style) ───────────────────────────────
+  const updateGhostText = (term: XTerm) => {
+    const buffer = inputBufferRef.current;
+    const suggestion = getAutoSuggestion(buffer);
+
+    // Clear previous ghost text
+    term.write('\x1b[K');
+
+    if (suggestion && suggestion.startsWith(buffer) && suggestion.length > buffer.length) {
+      const ghost = suggestion.slice(buffer.length);
+      activeGhostSuggestionRef.current = suggestion;
+
+      // Print ghost in dim grey, then step cursor back
+      term.write(`\x1b[38;2;110;110;125m${ghost}\x1b[0m`);
+      term.write(`\x1b[${ghost.length}D`);
+    } else {
+      activeGhostSuggestionRef.current = '';
+    }
+  };
 
   // Terminal Setup
   useEffect(() => {
@@ -72,10 +166,11 @@ export const TerminalPanel: React.FC = () => {
 
     const prompt = () => {
       term.write(getPromptStr());
+      activeGhostSuggestionRef.current = '';
     };
 
-    term.writeln('\x1b[1;38;2;99;102;241mIntegrated Terminal & Shell System v2.0\x1b[0m');
-    term.writeln('\x1b[38;2;156;163;175mFull interactive shell · Tab completion · History ↑/↓ · Smart cd\x1b[0m');
+    term.writeln('\x1b[1;38;2;99;102;241mIntegrated Terminal & Shell System v2.5 (Fully Loaded Auto-Suggest)\x1b[0m');
+    term.writeln('\x1b[38;2;156;163;175mAuto-suggestions for git/npm/docker/shell · Press → or Tab to accept suggestion\x1b[0m');
     prompt();
 
     // Data / Key Handler
@@ -89,12 +184,14 @@ export const TerminalPanel: React.FC = () => {
             historyIndexRef.current--;
           }
           const prevCmd = historyRef.current[historyIndexRef.current] || '';
+          term.write('\x1b[K'); // clear ghost
           while (inputBufferRef.current.length > 0) {
             inputBufferRef.current = inputBufferRef.current.slice(0, -1);
             term.write('\b \b');
           }
           inputBufferRef.current = prevCmd;
           term.write(prevCmd);
+          updateGhostText(term);
         }
         return;
       }
@@ -102,6 +199,7 @@ export const TerminalPanel: React.FC = () => {
       // 2. Down Arrow (History Forward)
       if (data === '\x1b[B') {
         if (historyRef.current.length > 0 && historyIndexRef.current !== -1) {
+          term.write('\x1b[K');
           if (historyIndexRef.current < historyRef.current.length - 1) {
             historyIndexRef.current++;
             const nextCmd = historyRef.current[historyIndexRef.current];
@@ -119,35 +217,55 @@ export const TerminalPanel: React.FC = () => {
             }
             inputBufferRef.current = '';
           }
+          updateGhostText(term);
         }
         return;
       }
 
-      // 3. Tab Completion
-      if (data === '\t') {
-        const buffer = inputBufferRef.current;
-        if (!buffer.trim()) return;
-        try {
-          const tree = await readDirectoryTree(activePathRef.current);
-          if (tree && tree.children) {
-            const lastWord = buffer.split(' ').pop() || '';
-            const match = tree.children.find((c) => c.name.toLowerCase().startsWith(lastWord.toLowerCase()));
-            if (match) {
-              const toAdd = match.name.slice(lastWord.length) + (match.isDirectory ? '/' : ' ');
-              inputBufferRef.current += toAdd;
-              term.write(toAdd);
+      // 3. Right Arrow (\x1b[C) or Tab (\t): Accept Auto-Suggestion!
+      if (data === '\x1b[C' || data === '\t') {
+        const suggestion = activeGhostSuggestionRef.current;
+        const currentBuffer = inputBufferRef.current;
+
+        if (suggestion && suggestion.startsWith(currentBuffer) && suggestion.length > currentBuffer.length) {
+          const addition = suggestion.slice(currentBuffer.length);
+          term.write('\x1b[K'); // clear ghost styling
+          term.write(addition);
+          inputBufferRef.current = suggestion;
+          activeGhostSuggestionRef.current = '';
+          return;
+        }
+
+        // Fallback Tab File-System Completion
+        if (data === '\t' && currentBuffer.trim()) {
+          try {
+            const tree = await readDirectoryTree(activePathRef.current);
+            if (tree && tree.children) {
+              const lastWord = currentBuffer.split(' ').pop() || '';
+              const match = tree.children.find((c) => c.name.toLowerCase().startsWith(lastWord.toLowerCase()));
+              if (match) {
+                const toAdd = match.name.slice(lastWord.length) + (match.isDirectory ? '/' : ' ');
+                term.write('\x1b[K');
+                inputBufferRef.current += toAdd;
+                term.write(toAdd);
+                updateGhostText(term);
+              }
             }
-          }
-        } catch {}
-        return;
+          } catch {}
+          return;
+        }
+
+        if (data === '\x1b[C') return;
       }
 
       const code = data.charCodeAt(0);
 
       // 4. Enter Key
       if (code === 13) {
+        term.write('\x1b[K'); // clear ghost text
         const line = inputBufferRef.current.trim();
         inputBufferRef.current = '';
+        activeGhostSuggestionRef.current = '';
 
         if (line.length > 0) {
           historyRef.current.push(line);
@@ -162,26 +280,33 @@ export const TerminalPanel: React.FC = () => {
       // 5. Backspace Key
       else if (code === 127) {
         if (inputBufferRef.current.length > 0) {
+          term.write('\x1b[K');
           inputBufferRef.current = inputBufferRef.current.slice(0, -1);
           term.write('\b \b');
+          updateGhostText(term);
         }
       }
       // 6. Ctrl+C (Interrupt)
       else if (code === 3) {
+        term.write('\x1b[K');
         inputBufferRef.current = '';
+        activeGhostSuggestionRef.current = '';
         term.write('^C');
         prompt();
       }
       // 7. Ctrl+L (Clear Screen)
       else if (code === 12) {
         inputBufferRef.current = '';
+        activeGhostSuggestionRef.current = '';
         term.clear();
         prompt();
       }
       // 8. Normal Character Input
       else if (code >= 32) {
+        term.write('\x1b[K');
         inputBufferRef.current += data;
         term.write(data);
+        updateGhostText(term);
       }
     });
 
@@ -209,14 +334,14 @@ export const TerminalPanel: React.FC = () => {
   const runCommand = async (commandLine: string, term: XTerm, getPromptStr: () => string) => {
     const trimmed = commandLine.trim();
 
-    // ── Built-in: Clear ───────────────────────────────────────────
+    // Built-in: Clear
     if (trimmed.toLowerCase() === 'clear') {
       term.clear();
       term.write(getPromptStr());
       return;
     }
 
-    // ── Built-in: Smart cd ────────────────────────────────────────
+    // Built-in: Smart cd
     if (trimmed === 'cd' || trimmed.startsWith('cd ')) {
       const targetArg = trimmed.slice(3).trim();
       let targetPath = activePathRef.current;
@@ -243,7 +368,7 @@ export const TerminalPanel: React.FC = () => {
       return;
     }
 
-    // ── External Shell Command ────────────────────────────────────
+    // External Shell Command
     const startTime = performance.now();
     const output = await executeShellCommand(commandLine, activePathRef.current);
     const endTime = performance.now();
