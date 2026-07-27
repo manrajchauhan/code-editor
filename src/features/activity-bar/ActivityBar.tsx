@@ -64,10 +64,10 @@ export const ActivityBar: React.FC = () => {
 
   return (
     <aside
-      className="w-14 bg-bg-surface border-r border-border-subtle flex flex-col justify-between items-center py-2 select-none z-20 shrink-0"
+      className="w-14 bg-bg-surface border-r border-border-subtle flex flex-col justify-between items-center py-3 select-none z-20 shrink-0"
       aria-label="Activity Bar"
     >
-      <div className="flex flex-col gap-0.5 w-full items-center">
+      <div className="flex flex-col gap-2 w-full items-center">
         {/* Sidebar toggle */}
         <div className="relative w-full flex items-center justify-center" onMouseEnter={() => setHovered('toggle')} onMouseLeave={() => setHovered(null)}>
           <button
@@ -87,7 +87,7 @@ export const ActivityBar: React.FC = () => {
           )}
         </div>
 
-        <div className="w-6 h-px bg-border-subtle my-1" />
+        <div className="w-6 h-px bg-border-subtle my-2" />
 
         {topItems.map(renderItem)}
       </div>
