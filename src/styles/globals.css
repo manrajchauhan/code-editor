@@ -22,7 +22,7 @@
   --text-subtle: #4b5563;
 }
 
-body, button, input, select, textarea {
+body {
   margin: 0;
   padding: 0;
   background-color: var(--bg-main);
@@ -30,6 +30,10 @@ body, button, input, select, textarea {
   font-family: var(--app-font-family);
   user-select: none;
   -webkit-user-select: none;
+}
+
+button, input, select, textarea {
+  font-family: var(--app-font-family);
 }
 
 /* Custom Scrollbars */
